@@ -1,0 +1,8 @@
+.Trash/
+
+git rm -r --cached .Trash
+git add .
+git commit -m "Excluded .Trash directory"
+
+^x
+
