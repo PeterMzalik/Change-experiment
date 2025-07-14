@@ -1,16 +1,26 @@
 rm(list=ls(all=TRUE))
 
-getwd()
-setwd("/Users/petermazalik/Library/CloudStorage/OneDrive-JohnsHopkins/1 Project Change/exp_scripts/experiment 7 shapes/data")
+
+
 
 install.packages("tidyverse")
 install.packages("lme4")
 install.packages("doBy")
-
+install.packages("effsize")
+install.packages("pwr")
+install.packages("here")  
 
 library(tidyverse)
 library(lme4)
 library(doBy)
+library(effsize)
+library(pwr)
+library(here)    
+
+
+
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+getwd()
 
 
 d <-
@@ -93,7 +103,7 @@ participants_without_incorrect <- allGroups_without_incorrect$subjectID
 
 dTest3 <- dWithoutIncorrect
 
-dTest3$reactTime <- dTest3$reactTime - 620
+dTest3$reactTime <- dTest3$reactTime - 269
 
 mean_dTest3 <- mean(dTest3$reactTime)
 
@@ -112,8 +122,7 @@ dTest3 <- dTest3  %>%
   mutate(zscore = (reactTime - mean(reactTime))/sd(reactTime))
  
 dTest3 <- dTest3 %>%
- filter(reactTime >= 400) %>%
- filter(reactTime <= 2500)  
+ filter(reactTime <= 40000)  
 
 
 
@@ -179,7 +188,6 @@ meansTable <- add_row(meansTable, name = 'Same inconsistent', mean = meanVarSame
 
 
 
-t.test(varSameSwapInconsistent$reactTime, varSameInconsistent$reactTime, paired = FALSE, var.equal = FALSE)
 
 
 values <- c( meanVarSameSwapInconsistent, meanVarSameInconsistent)
@@ -191,17 +199,17 @@ names <- c( "Swap", "Same")
 colors <- c( "#808080", "#808080")
 
 # Base Plot
-plot(1, type = "n", xlim = c(0.5, length(values) + 0.5), ylim = c(1300, max(values + 10 + errors)),
+plot(1, type = "n", xlim = c(0.5, length(values) + 0.5), ylim = c(1000, max(values + errors)),
      xlab = "Trial Type", ylab = "Reaction Time (ms)",  
      xaxt = "n", yaxt = "n")
 
 # Adding custom axes
-axis(2, at = seq(1300, max(values + 50 + errors), by = 50), las = 2) # Y-axis
+axis(2, at = seq(1000, max(values + errors), by = 50), las = 2) # Y-axis
 axis(1, at = 1:length(values), labels = names) # X-axis
 
 # Adding bars
 for (i in 1:length(values)) {
-  rect(i - 0.4, 1300, i + 0.4, values[i], col = colors[i])
+  rect(i - 0.4, 1000, i + 0.4, values[i], col = colors[i])
   
   # Adding error bars
   arrows(x0 = i, y0 = values[i] - errors[i], x1 = i, y1 = values[i] + errors[i], 
@@ -251,6 +259,27 @@ print(overall_accuracy)
 
 
 
+mean_by_subject <- dTest3 %>%
+  group_by(subjectID, matchType, trialType) %>%
+  summarize(meanRT = mean(reactTime), .groups = "drop") %>%
+  unite(condition, matchType, trialType) %>%  # e.g. "same_inconsistent"
+  pivot_wider(names_from = condition, values_from = meanRT)
+
+
+t.test(mean_by_subject$same_swap_inconsistent, mean_by_subject$same_inconsistent,  paired = TRUE, within = TRUE, alternative = "greater" )
+
+cohen.d(mean_by_subject$same_swap_inconsistent, mean_by_subject$same_inconsistent, paired = TRUE, within = FALSE, alternative = "greater")
+
+
+
+diffsm <- mean_by_subject$same_swap_inconsistent - mean_by_subject$same_inconsistent
+
+dzm <- mean(diffsm) / sd(diffsm)
+
+nm <- length(diffsm)
+
+power_paired_m <- pwr.t.test(n = nm, d = dzm, type = "paired", sig.level = 0.05, alternative = "greater")
+print(power_paired_m)
 
 
 
