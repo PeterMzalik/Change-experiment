@@ -1260,6 +1260,8 @@ function showTrials_training_0() {
     balls_B = balls;
     balls = [];
 
+    startTrialTime = new Date();
+    trialsInfo_training[trainingTrial].startTime = startTrialTime;
     $('#canvas_L').show(); 
     animate();
 }
@@ -1290,6 +1292,9 @@ function showTrials_training() {
         $('#Instruction2').hide();
         ctx_L.fillStyle = 'gray';
         ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
+        
+        startTrialTime = new Date();
+        trialsInfo_training[trainingTrial].startTime = startTrialTime;
         $('#canvas_L').show();
         animate(); 
     } else {
