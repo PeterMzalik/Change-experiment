@@ -213,17 +213,31 @@ body {
 </style>
 
 <script>
+
 //------Set up canvas begin---------
+// Get the main canvas element used to display the experiment.
 var canvas_L = document.getElementById('canvas_L');
+// Get the 2D drawing context so shapes, disks, and occluders can be drawn.
 var ctx_L = canvas_L.getContext('2d');
+// Store canvas dimensions for repeated use throughout the experiment.
 var canvasWidth = canvas_L.width;
 var canvasHeight = canvas_L.height;
 
+// Store screen dimensions. These variables are not used later in this script.
 let screenWidth = screen.width;
 let screeHeight = screen.height;
+
+
+
 //--------------------------------------
 //---------SET PARAMETERS BEGIN---------
 //--------------------------------------
+
+// --------------------------------------
+// Color parameter setup
+// --------------------------------------
+// These arrays define a long circular color path through RGB space.
+// The experiment later steps through this array to create smooth color change.
 var colorArray_1 = [];
 for(i=0;i<256;i++){
     colorArray_1[i] = 'rgb(255, ' + i + ', 0)'
@@ -256,6 +270,15 @@ for(i=0;i<255;i++){
 }
 colorArray_6 = colorArray_6.reverse();
 
+// --------------------------------------
+// The two separate color spaces
+// --------------------------------------
+// Unlike Experiment 2, different color paths are used before and after occlusion.
+// colorArray2Half repeats the red-to-yellow-to-green segments three times.
+// colorArray1Half repeats the green-to-cyan-to-blue segments three times.
+// The changing disk uses colorArray1Half before reveal and colorArray2Half after.
+// The constant disk retains its color through both phases.
+
 colorArray2Half = colorArray_1.concat(colorArray_2);
 colorArray2Half = colorArray2Half.concat(colorArray_1);
 colorArray2Half = colorArray2Half.concat(colorArray_2)
@@ -268,17 +291,27 @@ colorArray1Half = colorArray1Half.concat(colorArray_4)
 colorArray1Half = colorArray1Half.concat(colorArray_3)
 colorArray1Half = colorArray1Half.concat(colorArray_4)
 
+// Concatenate all segments into one master color array.
+// This full array is later used to animate gradual color change.
 colorArray = colorArray_1.concat(colorArray_2);
 colorArray = colorArray.concat(colorArray_3);
 colorArray = colorArray.concat(colorArray_4);
 colorArray = colorArray.concat(colorArray_5);
 colorArray = colorArray.concat(colorArray_6);
 
+// --------------------------------------
+// Trial / response state variables
+// --------------------------------------
+// Controls whether participant responses should currently be accepted.
 var responseAcceptable = false;
+// Approximate refresh interval for 60 Hz presentation.
 var freshRate = 1000/60;
 
+// Variables for storing the start and end timestamps of each trial.
 var startTrialTime;
 var endTrialTime;
+
+
 
 // ======================== GET BROWSER ======================= //
 // Get browser (credit to Nimesh and other users of StackOverflow)
@@ -292,12 +325,15 @@ function getBrowser() {
     } else if (navigator.userAgent.indexOf("Firefox") != -1) {
         return "Firefox";
     } else if ((navigator.userAgent.indexOf("MSIE") != -1) || (!!document.documentMode == true)) {
+
         // If IE > 10
         return "IE";
     } else {
         return "Unknown";
     }
 }
+
+
 // ======================== GET AMAZON MTURK WORKER ID ======================= //
     // Get inferred subject ID from URL (credit to Eyal Peer)
     function getSubjectID() {
@@ -314,6 +350,7 @@ function redirect() {
         window.location = "https://jhu.sona-systems.com/webstudy_credit.aspx?experiment_id=835&credit_token=30546fab2bcf4599b4ea792fc532bfbe&survey_code="+window.subjectID
         
 }
+
 
 // ======================== POST DATA TO SERVER ======================= //
 function saveData(name, data){
@@ -340,10 +377,12 @@ document.addEventListener('keydown', function(event) {
     }
 });
   
-// ======================== save DATA TO loacl ======================= //
 
+
+// ======================== save DATA TO loacl ======================= //
 document.addEventListener('keydown', function(event) {
     if (event.key === 'd' || event.keyCode === 68) { // 68 is the keyCode for 'd'
+
         // download();
         let csvStr = convertJsonToCsv(trialsInfo);
         download(csvStr, 'full_design.csv', 'text/csv');
@@ -372,8 +411,10 @@ function download(data, filename, type) {
 function convertJsonToCsv(json) {
     const keys = Object.keys(json[0]);
     const csvRows = [];
+
     // headers
     csvRows.push(keys.join(','));
+
     // data
     for (const row of json) {
         csvRows.push(keys.map(key => row[key]).join(","));
@@ -381,6 +422,11 @@ function convertJsonToCsv(json) {
     return csvRows.join('\n');
 }
 
+// --------------------------------------
+// Trial generation variables
+// --------------------------------------
+// These temporary variables are filled on each iteration of trial generation
+// and then written into the trial objects that make up the experiment design.
 var shape_A_preview_tmp;
 var shape_A_test_tmp;
 var shape_B_preview_tmp;
@@ -390,21 +436,42 @@ var ball_B_color;
 
 var vertical_tmp_A;
 var vertical_tmp_B;
+
+// Possible final vertical positions of the two disks when they stop behind the occluder.
 var vertical_tmp_array = [-50,+50];
+
+// --------------------------------------
+// Trial generator
+// --------------------------------------
+// This function builds a full list of trial objects.
+// nRepetitions determines how many trials of each condition to generate.
+// trialsInfo is the array that the new trial objects are pushed into.
+// Unlike Experiment 1, each condition is generated twice: once with A changing
+// color and once with B changing color. The other disk remains constant.
+
 function trialGenerator(nRepetitions,trialsInfo) {
 
+    // ----------------------------------
+    // Condition 1: "same"
+    // Both previewed shapes reappear unchanged at test.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk A changes color continuously; disk B remains constant.
     for (var j1 = 0; j1 < 2*nRepetitions; j1++) { 
         
+        // Sample 2 distinct shapes from the 5 available shapes.
         var arr = [];
         while(arr.length < 2) {
             var r = Math.floor(Math.random() * 5);
             if(arr.indexOf(r) === -1) arr.push(r);
         }
+         // Assign the sampled shapes to preview and test.
         shape_A_preview_tmp = arr[0];
         shape_A_test_tmp = shape_A_preview_tmp;
         shape_B_preview_tmp = arr[1];
         shape_B_test_tmp = shape_B_preview_tmp;   
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -413,6 +480,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1]; 
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -421,6 +489,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial as one object.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"same",
@@ -430,6 +499,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,  
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":5,
             "ball_B_color_change_rate":0,   
             "ball_A_vertical":vertical_tmp_A,
@@ -443,18 +513,27 @@ function trialGenerator(nRepetitions,trialsInfo) {
         });                  
     }
 
+    // ----------------------------------
+    // Condition 1: "same"
+    // Both previewed shapes reappear unchanged at test.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk B changes color continuously; disk A remains constant.
     for (var j1 = 0; j1 < 2*nRepetitions; j1++) { 
         
+        // Sample 2 distinct shapes from the 5 available shapes.
         var arr = [];
         while(arr.length < 2) {
             var r = Math.floor(Math.random() * 5);
             if(arr.indexOf(r) === -1) arr.push(r);
         }
+         // Assign the sampled shapes to preview and test.
         shape_A_preview_tmp = arr[0];
         shape_A_test_tmp = shape_A_preview_tmp;
         shape_B_preview_tmp = arr[1];
         shape_B_test_tmp = shape_B_preview_tmp;   
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -463,6 +542,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1]; 
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -471,6 +551,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial as one object.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"same",
@@ -480,6 +561,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,  
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":0,
             "ball_B_color_change_rate":5,   
             "ball_A_vertical":vertical_tmp_A,
@@ -494,8 +576,16 @@ function trialGenerator(nRepetitions,trialsInfo) {
     }
 
 
+    // ----------------------------------
+    // Condition 2: "new"
+    // Shape A stays the same, shape B is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk A changes color continuously; disk B remains constant.
     for (var j1 = 0; j1 < nRepetitions; j1++) {
 
+        // Sample 3 distinct shapes:
+        // A preview, B preview, and a new test shape for B.
         var arr = [];
         while(arr.length < 3) {
             var r = Math.floor(Math.random() * 5);
@@ -506,6 +596,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         shape_B_preview_tmp = arr[1];
         shape_B_test_tmp = arr[2];   
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -514,6 +605,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1];
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -522,6 +614,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"new",
@@ -531,6 +624,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":5,
             "ball_B_color_change_rate":0,   
             "ball_A_vertical":vertical_tmp_A,
@@ -544,8 +638,16 @@ function trialGenerator(nRepetitions,trialsInfo) {
         });
     }
 
+    // ----------------------------------
+    // Condition 2: "new"
+    // Shape A stays the same, shape B is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk B changes color continuously; disk A remains constant.
     for (var j1 = 0; j1 < nRepetitions; j1++) {
 
+        // Sample 3 distinct shapes:
+        // A preview, B preview, and a new test shape for B.
         var arr = [];
         while(arr.length < 3) {
             var r = Math.floor(Math.random() * 5);
@@ -556,6 +658,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         shape_B_preview_tmp = arr[1];
         shape_B_test_tmp = arr[2];   
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -564,6 +667,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1];
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -572,6 +676,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"new",
@@ -581,6 +686,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":0,
             "ball_B_color_change_rate":5,   
             "ball_A_vertical":vertical_tmp_A,
@@ -594,8 +700,16 @@ function trialGenerator(nRepetitions,trialsInfo) {
         });
     }
 
+    // ----------------------------------
+    // Condition 3: "new"
+    // Shape B stays the same, shape A is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk A changes color continuously; disk B remains constant.
     for (var j1 = 0; j1 < nRepetitions; j1++) {
         
+        // Sample 3 distinct shapes:
+        // A preview, new test shape for A, and B preview/test.
         var arr = [];
         while(arr.length < 3) {
             var r = Math.floor(Math.random() * 5);
@@ -606,6 +720,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         shape_B_preview_tmp = arr[2];
         shape_B_test_tmp = shape_B_preview_tmp;
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -614,6 +729,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1];
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -622,6 +738,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"new",
@@ -631,6 +748,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":5,
             "ball_B_color_change_rate":0,   
             "ball_A_vertical":vertical_tmp_A,
@@ -644,8 +762,16 @@ function trialGenerator(nRepetitions,trialsInfo) {
         });
     }
 
+    // ----------------------------------
+    // Condition 3: "new"
+    // Shape B stays the same, shape A is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk B changes color continuously; disk A remains constant.
     for (var j1 = 0; j1 < nRepetitions; j1++) {
         
+        // Sample 3 distinct shapes:
+        // A preview, new test shape for A, and B preview/test.
         var arr = [];
         while(arr.length < 3) {
             var r = Math.floor(Math.random() * 5);
@@ -656,6 +782,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         shape_B_preview_tmp = arr[2];
         shape_B_test_tmp = shape_B_preview_tmp;
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -664,6 +791,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1];
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -672,6 +800,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"new",
@@ -681,6 +810,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":0,
             "ball_B_color_change_rate":5,   
             "ball_A_vertical":vertical_tmp_A,
@@ -694,8 +824,15 @@ function trialGenerator(nRepetitions,trialsInfo) {
         });
     }
 
+    // ----------------------------------
+    // Condition 4: "same_swap"
+    // The same two shapes reappear, but swapped between A and B.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk A changes color continuously; disk B remains constant.
     for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
         
+        // Sample 2 distinct shapes, then swap them at test.
         var arr = [];
         while(arr.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -706,6 +843,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         shape_A_test_tmp = shape_B_preview_tmp;
         shape_B_test_tmp = shape_A_preview_tmp;
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -714,6 +852,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1];
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -722,6 +861,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"same_swap",
@@ -731,6 +871,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":5,
             "ball_B_color_change_rate":0,   
             "ball_A_vertical":vertical_tmp_A,
@@ -743,8 +884,15 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "reactTime":"null",
         });
     }
+    // ----------------------------------
+    // Condition 4: "same_swap"
+    // The same two shapes reappear, but swapped between A and B.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk B changes color continuously; disk A remains constant.
     for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
         
+        // Sample 2 distinct shapes, then swap them at test.
         var arr = [];
         while(arr.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -755,6 +903,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         shape_A_test_tmp = shape_B_preview_tmp;
         shape_B_test_tmp = shape_A_preview_tmp;
 
+        // Sample 2 distinct disk colors.
         var arr_color = [];
         while(arr_color.length < 2) {
             var r = Math.floor(Math.random() * 5);
@@ -763,6 +912,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         ball_A_color = arr_color[0];
         ball_B_color = arr_color[1];
 
+        // Randomly assign the two final vertical positions.
         var arr_vertical = [];
         while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
@@ -771,6 +921,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
         vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
         vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
+        // Save all information for this trial.
         trialsInfo.push({
             "spatiotemporalType":"spatiotemporal_inconsistent",
             "matchType":"same_swap",
@@ -780,6 +931,7 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "shape_B_test_ind":shape_B_test_tmp,
             "ball_A_color":ball_A_color,
             "ball_B_color":ball_B_color,   
+            // Trial-specific color rates: 5 for the changing disk, 0 for the constant disk.
             "ball_A_color_change_rate":0,
             "ball_B_color_change_rate":5,   
             "ball_A_vertical":vertical_tmp_A,
@@ -792,54 +944,116 @@ function trialGenerator(nRepetitions,trialsInfo) {
             "reactTime":"null",
         });
     }
+    // Randomize the order of all generated trials before returning them.
     trialsInfo = shuffle(trialsInfo);
     return trialsInfo;
 }
 
+// --------------------------------------
+// Main experiment design
+// --------------------------------------
+
+// Array that will hold all main experimental trials.
 var trialsInfo = [];
 
+// Random subject ID used in saved trial data.
 var useSubjectID = Math.floor(Math.random() * 10000000);
 
+// Number of repetitions per condition set for the main experiment.
+// Experiment 3 uses 22 repetitions across the eight condition blocks (264 main trials).
 var nRepetitions = 22
+// Generate the full main experiment trial list.
 var frame = trialGenerator(nRepetitions,trialsInfo);
+// Total number of main experiment trials.
 var nTrials = frame.length;
 
+// --------------------------------------
+// Training design
+// --------------------------------------
+
+// Array that will hold all training trials.
 var trialsInfo_training = [];
-var nRepetitions_training = 1;//2
+
+// Number of repetitions per condition set for training.
+// The eight condition blocks produce 12 training trials with one repetition.
+var nRepetitions_training = 1;
+
+// Generate the training trial list.
 var frame_training = trialGenerator(nRepetitions_training,trialsInfo_training);
+
+// Total number of training trials.
 var nTrials_training = frame_training.length;
 
+
+// --------------------------------------
+// Browser and participant identifiers
+// --------------------------------------
+
+// Save detected browser type.
 var browser = getBrowser();
+// Save subject ID parsed from the URL, if available.
 var subjectID = getSubjectID();
 
-//---------------------------------------
-//-----------FUNCTIONS BEGIN-------------
-//---------------------------------------
+
+
+
+
+// ---------------------------------------
+// Utility and stimulus functions
+// ---------------------------------------
+
 /* Fisher-Yates shuffle */
+// Randomizes the order of elements in an array in place.
+// Used to shuffle the generated trial list before the experiment begins.
+
 function shuffle(o){
     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
         return o;
 }
+// Returns a random integer from min (inclusive) to max (exclusive).
 function random(min,max) {
     const num = Math.floor(Math.random() * (max - min)) + min;
     return num;
 }
+// ---------------------------------------
+// Ball object
+// ---------------------------------------
+// Each colored disk in the experiment is represented as a Ball object.
+// The object stores position, color, and size, and later gains methods
+// for drawing itself and updating its properties over time.
 function Ball(x,y,color,size) {
     this.x = x;
     this.y = y;
     this.color = color;
     this.size = size;
 };
+// ---------------------------------------
+// Ball display parameters
+// ---------------------------------------
 var nDots = 1; 
 var dotRadius = 40; //Radius of each dot in pixels
 var balls = [];
+
+// Maps the 5 disk color categories used in trial generation onto indices
+// in the larger colorArray defined earlier.
 // colorNumb = 10, red/200, yellow/380, green/1000, blue/1200, purple
 var balls_colorArray = [10,200,380,1000,1200];
 var colorInd;
+
+// Initial coordinates for disk A (the left disk).
 var x_0_A;
 var y_0_A;
+
+
+// ---------------------------------------
+// Create disk A
+// ---------------------------------------
+// Generates the left disk at its starting position and assigns it one of the
+// predefined color values from balls_colorArray.
+
 function generateNewBalls_A(ball_A_color) { // the ball on the left at beginning
     colorInd = balls_colorArray[ball_A_color];
+    // These local arrays are left unchanged from the original code.
     let colorNums = [];
     var x_0s = [];
     var y_0s = [];
@@ -859,10 +1073,20 @@ function generateNewBalls_A(ball_A_color) { // the ball on the left at beginning
     colorNums.push(colorNum);
     return balls;
 }
+
+// Initial coordinates for disk B (the right disk).
 var x_0_B;
 var y_0_B;
+
+// ---------------------------------------
+// Create disk B
+// ---------------------------------------
+// Generates the right disk at its starting position and assigns it one of the
+// predefined color values from balls_colorArray.
+
 function generateNewBalls_B(ball_B_color) { // the ball on the right at beginning
     colorInd = balls_colorArray[ball_B_color];
+    // These local arrays are left unchanged from the original code.
     let colorNums = [];
     var x_0s = [];
     var y_0s = [];
@@ -882,12 +1106,26 @@ function generateNewBalls_B(ball_B_color) { // the ball on the right at beginnin
     colorNums.push(colorNum);
     return balls;
 }
+// ---------------------------------------
+// Ball drawing method
+// ---------------------------------------
+// Draws the disk as a filled circle at its current x/y position.
+
 Ball.prototype.draw_balls = function() {
     ctx_L.beginPath();
     ctx_L.fillStyle = this.color;
     ctx_L.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx_L.fill();
 };
+
+// ---------------------------------------
+// Ball color-update method
+// ---------------------------------------
+// Advances the disk color along the master colorArray by color_change_rate_A.
+// When the end of the array is approached, the logic reverses direction
+// by reflecting the position index.
+// Experiment 3 uses a separate color-update method and rate for each disk.
+
 Ball.prototype.updateColor_A = function() { // updates color, when color_change_rate is zero, no color change
     var pos = colorArray.indexOf(this.color);
     if(pos >= colorArray.length - 1 - color_change_rate_A) {
@@ -897,6 +1135,15 @@ Ball.prototype.updateColor_A = function() { // updates color, when color_change_
     }
     this.color = colorArray[pos+color_change_rate_A];
 };
+
+// ---------------------------------------
+// Ball color-update method
+// ---------------------------------------
+// Advances the disk color along the master colorArray by color_change_rate_B.
+// When the end of the array is approached, the logic reverses direction
+// by reflecting the position index.
+// Experiment 3 uses a separate color-update method and rate for each disk.
+
 Ball.prototype.updateColor_B = function() { // updates color, when color_change_rate is zero, no color change
     var pos = colorArray.indexOf(this.color);
     if(pos >= colorArray.length - 1 - color_change_rate_B) {
@@ -908,6 +1155,12 @@ Ball.prototype.updateColor_B = function() { // updates color, when color_change_
 };
 
 
+// ---------------------------------------
+// Ball color-update method: disk A before reveal
+// ---------------------------------------
+// Use colorArray1Half for the changing disk; preserve the constant disk's color.
+// The existing code finds the current RGB value in the full colorArray, then
+// uses that index to select the next value from the phase-specific color array.
 Ball.prototype.updateColor_A_1 = function() { // updates color in first half of color space, used pre occlusion 
     var pos = colorArray.indexOf(this.color);
     if(pos >= colorArray.length - 1 - color_change_rate_A) {
@@ -922,6 +1175,13 @@ Ball.prototype.updateColor_A_1 = function() { // updates color in first half of 
     }
 };
 
+
+// ---------------------------------------
+// Ball color-update method: disk A during and after reveal
+// ---------------------------------------
+// Use colorArray2Half for the changing disk; preserve the constant disk's color.
+// The existing code finds the current RGB value in the full colorArray, then
+// uses that index to select the next value from the phase-specific color array.
 
 Ball.prototype.updateColor_A_2 = function() { // updates color in second half of color space, used post occlusion
     var pos = colorArray.indexOf(this.color);
@@ -938,6 +1198,13 @@ Ball.prototype.updateColor_A_2 = function() { // updates color in second half of
 };
 
 
+// ---------------------------------------
+// Ball color-update method: disk B before reveal
+// ---------------------------------------
+// Use colorArray1Half for the changing disk; preserve the constant disk's color.
+// The existing code finds the current RGB value in the full colorArray, then
+// uses that index to select the next value from the phase-specific color array.
+
 Ball.prototype.updateColor_B_1 = function() { // updates color in first half of color space, used pre occlusion 
     var pos = colorArray.indexOf(this.color);
     if(pos >= colorArray1Half.length - 1 - color_change_rate_B) {
@@ -953,6 +1220,13 @@ Ball.prototype.updateColor_B_1 = function() { // updates color in first half of 
 };
 
 
+
+// ---------------------------------------
+// Ball color-update method: disk B during and after reveal
+// ---------------------------------------
+// Use colorArray2Half for the changing disk; preserve the constant disk's color.
+// The existing code finds the current RGB value in the full colorArray, then
+// uses that index to select the next value from the phase-specific color array.
 
 Ball.prototype.updateColor_B_2 = function() { // updates color in second half of color space, used post occlusion
     var pos = colorArray.indexOf(this.color);
@@ -972,12 +1246,20 @@ Ball.prototype.updateColor_B_2 = function() { // updates color in second half of
 
 
 
-
-
-
+// ---------------------------------------
+// Motion parameters
+// ---------------------------------------
 var velX = 4.5;//4.5
+
 // var velY = 1.5;
 var edgeX = 100;
+
+// ---------------------------------------
+// Position update for disk A
+// ---------------------------------------
+// Moves the left disk toward the center/occluder.
+// The y-position is adjusted across different x-ranges to create a curved path.
+// Once the disk reaches the center, it is placed at its assigned final vertical offset.
 Ball.prototype.updatePosition_A = function() { //define the moving path
     if (this.x < canvasWidth/2) {
         this.x = this.x + velX;
@@ -1008,6 +1290,13 @@ Ball.prototype.updatePosition_A = function() { //define the moving path
         this.y = canvasHeight/2+vertical_tmp_A;
     }
 };
+
+// ---------------------------------------
+// Position update for disk B
+// ---------------------------------------
+// Moves the right disk toward the center/occluder.
+// As with disk A, the y-position changes across x-ranges to create the motion path.
+// Once the disk reaches the center, it is placed at its assigned final vertical offset.
 Ball.prototype.updatePosition_B = function() {    
     if (this.x > canvasWidth/2) {
         this.x = this.x - velX;
@@ -1040,7 +1329,11 @@ Ball.prototype.updatePosition_B = function() {
     }
 };
 
-// exp procedures 
+
+// ---------------------------------------
+// Experiment flow procedures
+// ---------------------------------------
+// Advance from the first instruction screen to the training instructions.
 function continueInstruction1() {
     $('#Instruction1').hide();
     $('#continueInstructionButton1').hide();
@@ -1051,6 +1344,13 @@ var shapeTmp;
 let balls_A = [];
 let balls_B = [];
 var trainingTrial = 0;
+
+// ---------------------------------------
+// Start the first training trial
+// ---------------------------------------
+// This function presents training trial 0.
+
+
 function showTrials_training_0() {
     responseAcceptable = false;
     $('#title').hide();
@@ -1068,6 +1368,11 @@ function showTrials_training_0() {
     $('#canvas_L').show(); 
     animate();
 }
+// ---------------------------------------
+// Advance to the next training trial
+// ---------------------------------------
+// This function is used after the first training trial.
+
 function showTrials_training() {
     responseAcceptable = false;
     $('#Instruction4').hide();
@@ -1096,6 +1401,11 @@ function showTrials_training() {
     }
 }
 var curTrial = 0;
+// ---------------------------------------
+// Start the first main experiment trial
+// ---------------------------------------
+// This function presents main trial 0.
+
 function showTrials_exp_0() {
     responseAcceptable = false;
     $('#title').hide();
@@ -1116,6 +1426,10 @@ function showTrials_exp_0() {
     $('#canvas_L').show();
     animate();  
 }
+// ---------------------------------------
+// Advance to the next main experiment trial
+// ---------------------------------------
+
 function showTrials_exp() {
     responseAcceptable = false;
     curTrial++;
@@ -1145,28 +1459,56 @@ function showTrials_exp() {
     }
 }
 
+// ---------------------------------------
+// Timing and stimulus presentation variables
+// ---------------------------------------
+// Timeout handles used to control the sequence of stimulus presentation.
+// These timeout handles are retained, but preview presentation in Experiment 3
+// is controlled inside animate() rather than in a separate stimuliPreview() function.
 var myTimeout10;
 var myTimeout11;
 var myTimeout12;
+// Variables storing the indices of the shapes shown during preview and test.
 var shapeInd_A_pre;
 var shapeInd_A_test;
 var shapeInd_B_pre;
 var shapeInd_B_test;
+// Timing parameters (in milliseconds).
+// In Experiment 3, these values are retained in the reaction-time calculation;
+// the display phases themselves are controlled by the animation counter.
 var colorDisk = 500;//500
 var previewShape = 1200;
 
+// ---------------------------------------
+// Animation Variables
+// ---------------------------------------
+// Counter tracking the number of animation frames since stimulus onset.
 var refresh_stimuliOnset_test = 0;
 
+// Rate at which disk colors change over time.
+// The two rates are loaded from the current trial: one is 5 and the other is 0.
+// Initial rates are 1 here, then overwritten by the current trial settings (5 or 0).
 var color_change_rate_A = 1;//0
+// Rate at which disk colors change over time.
 var color_change_rate_B = 1;//0
 
+// Handles for animation timing.
 var myTimeout;
 var myReq;
+// Indicates whether participant responses are currently allowed.
 var startResponseTiming = false;
+// Parameters controlling the movement of the occluder.
 var occluder_velX = 0;
 var occluder_velY = 40;//40
 var occluder_posX = 0;
+
 var occluder_posY = 0;
+
+// ---------------------------------------
+// Animation Function
+// ---------------------------------------
+// Animates the movement of the disks toward the occluder, removes the occluder,
+// and then displays the test shapes.
 
 function animate() { // make the balls and the shapes move together, and occluder when spatiotemporal feature is inconsistent
     myTimeout = setTimeout (function() {     
@@ -1196,6 +1538,7 @@ function animate() { // make the balls and the shapes move together, and occlude
 
     refresh_stimuliOnset_test ++;
     
+    // Show the stationary disks without shapes (counts 1-29).
     if (refresh_stimuliOnset_test < 30) {// fresh rate at the end is 16.6 ms. 76 times 16 is 1200 ms, that is what this keeps count of, so it is a timer. This period is just showing the balls and shape. 
         ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
 
@@ -1205,6 +1548,7 @@ function animate() { // make the balls and the shapes move together, and occlude
         balls_B[0].updateColor_B_1();
     }
 
+    // Preview Phase: show the preview shapes in the disks (counts 30-105).
     if (refresh_stimuliOnset_test >= 30 && refresh_stimuliOnset_test < 106) {// fresh rate at the end is 16.6 ms. 76 times 16 is 1200 ms, that is what this keeps count of, so it is a timer. This period is just showing the balls and shape. 
         ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
 
@@ -1240,11 +1584,13 @@ function animate() { // make the balls and the shapes move together, and occlude
         ctx_L.drawImage(shapeTmp, balls_B[0].x-27, balls_B[0].y-27)
     }
 
+    // Remove the shapes and move the disks behind the occluder (counts 106-205).
     if (refresh_stimuliOnset_test >= 106 && refresh_stimuliOnset_test < 206) {// this is the movement part. 
         balls_A[0].draw_balls();
         balls_A[0].updateColor_A_1();
         balls_A[0].updatePosition_A();
 
+    // Draw and update the position and color of disk B.
         balls_B[0].draw_balls();
         balls_B[0].updateColor_B_1();
         balls_B[0].updatePosition_B();
@@ -1252,6 +1598,7 @@ function animate() { // make the balls and the shapes move together, and occlude
         ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
     }
     
+    // Keep the occluder at its current position while drawing the disks (counts 206-230).
     if (refresh_stimuliOnset_test >= 206 && refresh_stimuliOnset_test <= 230) {// this is the occlusion part
         balls_A[0].draw_balls();
         balls_A[0].updateColor_A_1();
@@ -1264,8 +1611,10 @@ function animate() { // make the balls and the shapes move together, and occlude
         ctx_L.drawImage(occluder,canvasWidth/2-100-occluder_posX,canvasHeight/2-150-occluder_posY);
     }  
 
+    // Reveal the disks without shapes by moving the occluder upward (counts 230-260).
     if (refresh_stimuliOnset_test >= 230 && refresh_stimuliOnset_test <= 260) {//this is the reveal part without shapes
 
+        // Determine test shapes for training or main experiment trials.
         if (trainingTrial <= trialsInfo_training.length-1) {
             shapeInd_A_test = trialsInfo_training[trainingTrial].shape_A_test_ind;
             shapeInd_B_test = trialsInfo_training[trainingTrial].shape_B_test_ind;
@@ -1288,6 +1637,7 @@ function animate() { // make the balls and the shapes move together, and occlude
         occluder_posY = occluder_posY + occluder_velY;
     }
 
+    // Display the test shapes and allow responses (counts above 260).
     if (refresh_stimuliOnset_test > 260) {//this is the reveal part
 
         if (trainingTrial <= trialsInfo_training.length-1) {
@@ -1308,6 +1658,7 @@ function animate() { // make the balls and the shapes move together, and occlude
         balls_B[0].updateColor_B_2();
         balls_B[0].updatePosition_B();
 
+        // Draw test shape for disk A.
         if (shapeInd_A_test == 0) {
             shapeTmp = shape_0
         } else if (shapeInd_A_test == 1) {
@@ -1321,6 +1672,7 @@ function animate() { // make the balls and the shapes move together, and occlude
         }
         ctx_L.drawImage(shapeTmp, balls_A[0].x-27, balls_A[0].y-27);
         
+            // Draw test shape for disk B.
         if (shapeInd_B_test == 0) {
             shapeTmp = shape_0
         } else if (shapeInd_B_test == 1) {
@@ -1342,11 +1694,23 @@ function animate() { // make the balls and the shapes move together, and occlude
         myReq = requestAnimationFrame(animate);
     }, freshRate)
 };
+// ---------------------------------------
+// Response recording variables
+// ---------------------------------------
+// Temporary variables used to store the participant's response and reaction time.
 let repsonse_tmp;
 let rt_tmp;
-// record keyboard response
+
+// ---------------------------------------
+// Keyboard Response Listener
+// ---------------------------------------
+// Listens for key presses ('1' for "same", '0' for "different") once responses
+// are allowed (i.e., after the occluder is removed).
 window.addEventListener('keydown', function(e) {
 if (responseAcceptable == true) {
+        // ============================================================
+        // Response: Key '1' (Participant indicates "same")
+        // ============================================================    
     if (e.key == '1') {
         endTrialTime = new Date();
         window.cancelAnimationFrame(myReq);
@@ -1372,6 +1736,9 @@ if (responseAcceptable == true) {
         console.log("curTrial" + curTrial);
         console.log("curTrial.length" + trialsInfo.length);
 
+            // ----------------------------
+            // Training Trials
+            // ----------------------------       
         if (curTrial ==0 && trainingTrial >=0 && trainingTrial < trialsInfo_training.length) {
             trialsInfo_training[trainingTrial].endTime = endTrialTime;
             trialsInfo_training[trainingTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
@@ -1388,6 +1755,9 @@ if (responseAcceptable == true) {
             }
         }
 
+            // ----------------------------
+            // Main Experiment Trials
+            // ----------------------------
         if (curTrial >0 &&  curTrial < trialsInfo.length) {
         trialsInfo[curTrial].endTime = endTrialTime;
         trialsInfo[curTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
@@ -1404,6 +1774,9 @@ if (responseAcceptable == true) {
         }
         }
     }
+        // ============================================================
+        // Response: Key '0' (Participant indicates "different")
+        // ============================================================
     if (e.key == '0') {
         endTrialTime = new Date();
         window.cancelAnimationFrame(myReq);
@@ -1429,6 +1802,9 @@ if (responseAcceptable == true) {
         console.log('curTrial' + curTrial);
         console.log("curTrial.length" + trialsInfo.length);
 
+            // ----------------------------
+            // Training Trials
+            // ----------------------------
          if (curTrial ==0 && trainingTrial >=0 && trainingTrial < trialsInfo_training.length) {
             trialsInfo_training[trainingTrial].endTime = endTrialTime;
             trialsInfo_training[trainingTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
@@ -1448,6 +1824,9 @@ if (responseAcceptable == true) {
             }
         }
 
+            // ----------------------------
+            // Main Experiment Trials
+            // ----------------------------
         if (curTrial >0 &&  curTrial < trialsInfo.length) {
         trialsInfo[curTrial].endTime = endTrialTime;
         trialsInfo[curTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
@@ -1470,62 +1849,70 @@ if (responseAcceptable == true) {
 }    console.log(trialsInfo);       
 }, false);
 
-// trialsInfo[0].responseC = 2;
-
-//window.addEventListener ('keydown', function(e){
-  //  if (e.key === "Enter" || e.which == 13){
-    //          continueInstruction1();
-      //     } 
-        //}, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//         if (trainingTrial == 0 ) {
-//               showTrials_training_0();
-//            } 
-//        }
-//         }, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//         if (curTrial == 0 ) {
-//               showTrials_training_0();
-//            } 
-//        }
-//         }, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//         if (trainingTrial <= trialsInfo_training.length-1 && trainingTrial > 0 ) {
-//               showTrials_training();
-//            } 
-//        }
-//         }, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//       if (curTrial <= trialsInfo.length - 1 && curTrial>0) {
-//               showTrials_exp();
-//            } 
-//        }
-//         }, false) ;
 
 
-// save json file to local device
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------------------------------
+// Save Data to Local Device
+// ---------------------------------------
+// Converts the trial data to JSON format and downloads it locally.
 function doneExperiment() {
     JSONObj = JSON.stringify(window.frame);
     download(JSONObj, "test_data.json", "json"); 
 };
 /* wait for clicks */
+// ---------------------------------------
+// Button Event Bindings
+// ---------------------------------------
+// These connect the HTML interface buttons to the corresponding functions.
 $('#continueInstructionButton1').click(continueInstruction1);
 $('#startTrainingButton').click(showTrials_training_0);
 $('#nextTrainingTrialButton').click(showTrials_training);
 $('#startExpButton').click(showTrials_exp_0);
 $('#nextTrialButton').click(showTrials_exp);
 
-// $('#submitButton').attr("onclick", "doneExperiment()");
-// $('#submitButton').attr("onclick", "postData()");
 
-// this script is written by Qihan Wu on 10/11/2022 for experiments investigating what dominates object correspondece
+
+
+
 </script>
 
