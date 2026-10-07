@@ -60,7 +60,7 @@
 <img id="shape_2", width="55",height="55", src="shape_2.png">
 <img id="shape_3", width="55",height="55", src="shape_3.png">
 <img id="shape_4", width="55",height="55", src="shape_4.png"> 
-<!-- <img id="gif",  width="55",height="55", src="nerdalus.gif">  -->
+
 
 </body>
 </html>
@@ -216,72 +216,44 @@ body {
 </style>
 
 <script>
+
+
 //------Set up canvas begin---------
-var canvas_L = document.getElementById('canvas_L');
-var ctx_L = canvas_L.getContext('2d');
+// Get the main canvas element used to display the experiment.
+var canvas_L = document.getElementById('canvas_L'); 
+
+
+// Get the 2D drawing context so shapes, disks, and occluders can be drawn.
+var ctx_L = canvas_L.getContext('2d'); 
+
+
+// Store canvas dimensions for repeated use throughout the experiment.
 var canvasWidth = canvas_L.width;
 var canvasHeight = canvas_L.height;
 
+// Store screen dimensions. These variables are not used later in this script.
 let screenWidth = screen.width;
 let screeHeight = screen.height;
-//--------------------------------------
-//---------SET PARAMETERS BEGIN---------
-//--------------------------------------
-var colorArray_1 = [];
-for(i=0;i<256;i++){
-    colorArray_1[i] = 'rgb(255, ' + i + ', 0)'
-}
-var colorArray_2 = [];
-for(i=0;i<255;i++){
-    colorArray_2[i] = 'rgb(' + i + ', 255, 0)'
-}
-colorArray_2 = colorArray_2.reverse();
 
-var colorArray_3 = [];
-for(i=0;i<255;i++){
-    j = i+1;
-    colorArray_3[i] = 'rgb(0, 255, ' + j + ')'
-}
-var colorArray_4 = [];
-for(i=0;i<255;i++){
-    colorArray_4[i] = 'rgb(0, ' + i + ', 255)'
-}
-colorArray_4 = colorArray_4.reverse();
 
-var colorArray_5 = [];
-for(i=0;i<255;i++){
-    j = i+1;
-    colorArray_5[i] = 'rgb(' + j + ', 0, 255)'
-}
-var colorArray_6 = [];
-for(i=0;i<255;i++){
-    colorArray_6[i] = 'rgb(255, 0, ' + i + ')'
-}
-colorArray_6 = colorArray_6.reverse();
 
-colorArray2Half = colorArray_1.concat(colorArray_2);
-colorArray2Half = colorArray2Half.concat(colorArray_1);
-colorArray2Half = colorArray2Half.concat(colorArray_2)
-colorArray2Half = colorArray2Half.concat(colorArray_1)
-colorArray2Half = colorArray2Half.concat(colorArray_2)
 
-colorArray1Half = colorArray_3.concat(colorArray_4);
-colorArray1Half = colorArray1Half.concat(colorArray_3);
-colorArray1Half = colorArray1Half.concat(colorArray_4)
-colorArray1Half = colorArray1Half.concat(colorArray_3)
-colorArray1Half = colorArray1Half.concat(colorArray_4)
-
-colorArray = colorArray_1.concat(colorArray_2);
-colorArray = colorArray.concat(colorArray_3);
-colorArray = colorArray.concat(colorArray_4);
-colorArray = colorArray.concat(colorArray_5);
-colorArray = colorArray.concat(colorArray_6);
-
+// --------------------------------------
+// Trial / response state variables
+// --------------------------------------
+// Controls whether participant responses should currently be accepted.
 var responseAcceptable = false;
+
+
+// Approximate refresh interval for 60 Hz presentation.
 var freshRate = 1000/60;
 
+
+// Variables for storing the start and end timestamps of each trial.
 var startTrialTime;
 var endTrialTime;
+
+
 
 // ======================== GET BROWSER ======================= //
 // Get browser (credit to Nimesh and other users of StackOverflow)
@@ -295,12 +267,15 @@ function getBrowser() {
     } else if (navigator.userAgent.indexOf("Firefox") != -1) {
         return "Firefox";
     } else if ((navigator.userAgent.indexOf("MSIE") != -1) || (!!document.documentMode == true)) {
+
         // If IE > 10
         return "IE";
     } else {
         return "Unknown";
     }
 }
+
+
 // ======================== GET AMAZON MTURK WORKER ID ======================= //
     // Get inferred subject ID from URL (credit to Eyal Peer)
     function getSubjectID() {
@@ -317,6 +292,7 @@ function redirect() {
         window.location = "https://jhu.sona-systems.com/webstudy_credit.aspx?experiment_id=835&credit_token=30546fab2bcf4599b4ea792fc532bfbe&survey_code="+window.subjectID
         
 }
+
 
 // ======================== POST DATA TO SERVER ======================= //
 function saveData(name, data){
@@ -343,10 +319,12 @@ document.addEventListener('keydown', function(event) {
     }
 });
   
-// ======================== save DATA TO loacl ======================= //
 
+
+// ======================== save DATA TO loacl ======================= //
 document.addEventListener('keydown', function(event) {
     if (event.key === 'd' || event.keyCode === 68) { // 68 is the keyCode for 'd'
+
         // download();
         let csvStr = convertJsonToCsv(trialsInfo);
         download(csvStr, 'full_design.csv', 'text/csv');
@@ -375,8 +353,10 @@ function download(data, filename, type) {
 function convertJsonToCsv(json) {
     const keys = Object.keys(json[0]);
     const csvRows = [];
+
     // headers
     csvRows.push(keys.join(','));
+
     // data
     for (const row of json) {
         csvRows.push(keys.map(key => row[key]).join(","));
@@ -384,466 +364,705 @@ function convertJsonToCsv(json) {
     return csvRows.join('\n');
 }
 
-// const gif = document.getElementById("gif");
-// const pat = ctx_L.createPattern(gif,"repeat");
 
-var shape_A_preview_tmp;
-var shape_A_test_tmp;
-var shape_B_preview_tmp;
-var shape_B_test_tmp;
-var ball_A_color;
-var ball_B_color;
+// --------------------------------------
+// Trial generation variables
+// --------------------------------------
+// These temporary variables are filled on each iteration of trial generation
+// and then written into the trial objects that make up the experiment design.
+var shape_A_preview_tmp; // Temporary identity of shape shown in disk A during preview.
+var shape_A_test_tmp;    // Temporary identity of shape shown in disk A at test.
+var shape_B_preview_tmp; // Temporary identity of shape shown in disk B during preview.
+var shape_B_test_tmp;    // Temporary identity of shape shown in disk B at test.
 
-var vertical_tmp_A;
-var vertical_tmp_B;
+var ball_A_color;        // Stored color category for disk A; not used to draw its patterned appearance.
+var ball_B_color;        // Stored color category for disk B; not used to draw its patterned appearance.
+
+var vertical_tmp_A;      // Final vertical offset for disk A behind the occluder.
+var vertical_tmp_B;      // Final vertical offset for disk B behind the occluder.
+
+
+// Possible final vertical positions of the two disks when they stop behind the occluder.
 var vertical_tmp_array = [-50,+50];
-function trialGenerator(nRepetitions,trialsInfo) {
 
-    for (var j1 = 0; j1 < 2*nRepetitions; j1++) { 
-        
-        var arr = [];
-        while(arr.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_A_test_tmp = shape_A_preview_tmp;
-        shape_B_preview_tmp = arr[1];
-        shape_B_test_tmp = shape_B_preview_tmp;   
 
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1]; 
+// --------------------------------------
+// Trial generator
+// --------------------------------------
+// This function builds a full list of trial objects.
+// nRepetitions determines how many trials of each condition to generate.
+// trialsInfo is the array that the new trial objects are pushed into.
 
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+function trialGenerator(nRepetitions, trialsInfo) {
 
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"same",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,  
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":5,
-            "ball_B_color_change_rate":0,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });                  
+    // ----------------------------------
+    // Condition 1: "same"
+    // Both previewed shapes reappear unchanged at test.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk A has rotating stripes; disk B has changing stripe width and spacing.
+for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
+
+
+        // Sample 2 distinct shapes from the 5 available shapes.
+    var arr = [];
+    while(arr.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
     }
 
-    for (var j1 = 0; j1 < 2*nRepetitions; j1++) { 
-        
-        var arr = [];
-        while(arr.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_A_test_tmp = shape_A_preview_tmp;
-        shape_B_preview_tmp = arr[1];
-        shape_B_test_tmp = shape_B_preview_tmp;   
+         // Assign the sampled shapes to preview and test.
+    shape_A_preview_tmp = arr[0];
+    shape_A_test_tmp    = shape_A_preview_tmp;
+    shape_B_preview_tmp = arr[1];
+    shape_B_test_tmp    = shape_B_preview_tmp;
 
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1]; 
 
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
-
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"same",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,  
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":0,
-            "ball_B_color_change_rate":5,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });                  
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
     }
 
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
 
-    for (var j1 = 0; j1 < nRepetitions; j1++) {
 
-        var arr = [];
-        while(arr.length < 3) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_A_test_tmp = shape_A_preview_tmp;
-        shape_B_preview_tmp = arr[1];
-        shape_B_test_tmp = arr[2];   
-
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1];
-
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
         var r = Math.floor(Math.random() * 2);
         if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
-
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"new",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":5,
-            "ball_B_color_change_rate":0,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });
     }
 
-    for (var j1 = 0; j1 < nRepetitions; j1++) {
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
 
-        var arr = [];
-        while(arr.length < 3) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_A_test_tmp = shape_A_preview_tmp;
-        shape_B_preview_tmp = arr[1];
-        shape_B_test_tmp = arr[2];   
 
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1];
+        // Save all information for this trial as one object.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"same",
 
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
 
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"new",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":0,
-            "ball_B_color_change_rate":5,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });
-    }
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
 
-    for (var j1 = 0; j1 < nRepetitions; j1++) {
-        
-        var arr = [];
-        while(arr.length < 3) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_A_test_tmp = arr[1];
-        shape_B_preview_tmp = arr[2];
-        shape_B_test_tmp = shape_B_preview_tmp;
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":5,
+        "ball_B_color_change_rate":0,
 
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1];
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
 
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
-
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"new",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":5,
-            "ball_B_color_change_rate":0,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });
-    }
-
-    for (var j1 = 0; j1 < nRepetitions; j1++) {
-        
-        var arr = [];
-        while(arr.length < 3) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_A_test_tmp = arr[1];
-        shape_B_preview_tmp = arr[2];
-        shape_B_test_tmp = shape_B_preview_tmp;
-
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1];
-
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
-
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"new",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":0,
-            "ball_B_color_change_rate":5,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });
-    }
-
-    for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
-        
-        var arr = [];
-        while(arr.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_B_preview_tmp = arr[1];
-        shape_A_test_tmp = shape_B_preview_tmp;
-        shape_B_test_tmp = shape_A_preview_tmp;
-
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1];
-
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
-
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"same_swap",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":5,
-            "ball_B_color_change_rate":0,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });
-    }
-    for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
-        
-        var arr = [];
-        while(arr.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr.indexOf(r) === -1) arr.push(r);
-        }
-        shape_A_preview_tmp = arr[0];
-        shape_B_preview_tmp = arr[1];
-        shape_A_test_tmp = shape_B_preview_tmp;
-        shape_B_test_tmp = shape_A_preview_tmp;
-
-        var arr_color = [];
-        while(arr_color.length < 2) {
-            var r = Math.floor(Math.random() * 5);
-            if(arr_color.indexOf(r) === -1) arr_color.push(r);
-        }
-        ball_A_color = arr_color[0];
-        ball_B_color = arr_color[1];
-
-        var arr_vertical = [];
-        while(arr_vertical.length < 2) {
-        var r = Math.floor(Math.random() * 2);
-        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
-        }
-        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
-        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
-
-        trialsInfo.push({
-            "spatiotemporalType":"spatiotemporal_inconsistent",
-            "matchType":"same_swap",
-            "shape_A_pre_ind":shape_A_preview_tmp,
-            "shape_A_test_ind":shape_A_test_tmp,
-            "shape_B_pre_ind":shape_B_preview_tmp,
-            "shape_B_test_ind":shape_B_test_tmp,
-            "ball_A_color":ball_A_color,
-            "ball_B_color":ball_B_color,   
-            "ball_A_color_change_rate":0,
-            "ball_B_color_change_rate":5,   
-            "ball_A_vertical":vertical_tmp_A,
-            "ball_B_vertical":vertical_tmp_B,
-            "responseC": "null",
-            "browser": getBrowser(),
-            "subjectID": useSubjectID,
-            "startTime": "null",
-            "endTime": "null",
-            "reactTime":"null",
-        });
-    }
-    trialsInfo = shuffle(trialsInfo);
-    return trialsInfo;
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
 }
 
+
+    // ----------------------------------
+    // Condition 1: "same"
+    // Both previewed shapes reappear unchanged at test.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk B has rotating stripes; disk A has changing stripe width and spacing.
+for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
+
+        // Sample 2 distinct shapes from the 5 available shapes.
+    var arr = [];
+    while(arr.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+         // Assign the sampled shapes to preview and test.
+    shape_A_preview_tmp = arr[0];
+    shape_A_test_tmp    = shape_A_preview_tmp;
+    shape_B_preview_tmp = arr[1];
+    shape_B_test_tmp    = shape_B_preview_tmp;
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial as one object.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"same",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":0,
+        "ball_B_color_change_rate":5,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+
+    // ----------------------------------
+    // Condition 2: "new"
+    // Shape A stays the same, shape B is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk A has rotating stripes; disk B has changing stripe width and spacing.
+for (var j1 = 0; j1 < nRepetitions; j1++) {
+
+
+
+        // Sample 3 distinct shapes:
+        // A preview, B preview, and a new test shape for B.
+    var arr = [];
+    while(arr.length < 3) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+    shape_A_preview_tmp = arr[0];
+    shape_A_test_tmp    = shape_A_preview_tmp;
+    shape_B_preview_tmp = arr[1];
+    shape_B_test_tmp    = arr[2];
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"new",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":5,
+        "ball_B_color_change_rate":0,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+    // ----------------------------------
+    // Condition 2: "new"
+    // Shape A stays the same, shape B is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk B has rotating stripes; disk A has changing stripe width and spacing.
+for (var j1 = 0; j1 < nRepetitions; j1++) {
+
+        // Sample 3 distinct shapes:
+        // A preview, B preview, and a new test shape for B.
+    var arr = [];
+    while(arr.length < 3) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+    shape_A_preview_tmp = arr[0];
+    shape_A_test_tmp    = shape_A_preview_tmp;
+    shape_B_preview_tmp = arr[1];
+    shape_B_test_tmp    = arr[2];
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"new",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":0,
+        "ball_B_color_change_rate":5,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+    // ----------------------------------
+    // Condition 3: "new"
+    // Shape B stays the same, shape A is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk A has rotating stripes; disk B has changing stripe width and spacing.
+for (var j1 = 0; j1 < nRepetitions; j1++) {
+
+        // Sample 3 distinct shapes:
+        // A preview, new test shape for A, and B preview/test.
+    var arr = [];
+    while(arr.length < 3) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+    shape_A_preview_tmp = arr[0];
+    shape_A_test_tmp    = arr[1];
+    shape_B_preview_tmp = arr[2];
+    shape_B_test_tmp    = shape_B_preview_tmp;
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"new",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":5,
+        "ball_B_color_change_rate":0,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+    // ----------------------------------
+    // Condition 3: "new"
+    // Shape B stays the same, shape A is replaced by a new shape.
+    // Generated at nRepetitions.
+    // ----------------------------------
+    // Disk B has rotating stripes; disk A has changing stripe width and spacing.
+for (var j1 = 0; j1 < nRepetitions; j1++) {
+
+        // Sample 3 distinct shapes:
+        // A preview, new test shape for A, and B preview/test.
+    var arr = [];
+    while(arr.length < 3) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+    shape_A_preview_tmp = arr[0];
+    shape_A_test_tmp    = arr[1];
+    shape_B_preview_tmp = arr[2];
+    shape_B_test_tmp    = shape_B_preview_tmp;
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"new",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":0,
+        "ball_B_color_change_rate":5,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+    // ----------------------------------
+    // Condition 4: "same_swap"
+    // The same two shapes reappear, but swapped between A and B.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk A has rotating stripes; disk B has changing stripe width and spacing.
+for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
+
+        // Sample 2 distinct shapes, then swap them at test.
+    var arr = [];
+    while(arr.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+    shape_A_preview_tmp = arr[0];
+    shape_B_preview_tmp = arr[1];
+    shape_A_test_tmp    = shape_B_preview_tmp;
+    shape_B_test_tmp    = shape_A_preview_tmp;
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"same_swap",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":5,
+        "ball_B_color_change_rate":0,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+    // ----------------------------------
+    // Condition 4: "same_swap"
+    // The same two shapes reappear, but swapped between A and B.
+    // Generated at 2 * nRepetitions.
+    // ----------------------------------
+    // Disk B has rotating stripes; disk A has changing stripe width and spacing.
+for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
+
+        // Sample 2 distinct shapes, then swap them at test.
+    var arr = [];
+    while(arr.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr.indexOf(r) === -1) arr.push(r);
+    }
+
+    shape_A_preview_tmp = arr[0];
+    shape_B_preview_tmp = arr[1];
+    shape_A_test_tmp    = shape_B_preview_tmp;
+    shape_B_test_tmp    = shape_A_preview_tmp;
+
+        // Sample 2 distinct color-category values to store in the trial data.
+    var arr_color = [];
+    while(arr_color.length < 2) {
+        var r = Math.floor(Math.random() * 5);
+        if(arr_color.indexOf(r) === -1) arr_color.push(r);
+    }
+
+    ball_A_color = arr_color[0];
+    ball_B_color = arr_color[1];
+
+        // Randomly assign the two final vertical positions.
+    var arr_vertical = [];
+    while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+    }
+
+    vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+    vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        // Save all information for this trial.
+    trialsInfo.push({
+        "spatiotemporalType":"spatiotemporal_inconsistent",
+        "matchType":"same_swap",
+
+        "shape_A_pre_ind":shape_A_preview_tmp,
+        "shape_A_test_ind":shape_A_test_tmp,
+        "shape_B_pre_ind":shape_B_preview_tmp,
+        "shape_B_test_ind":shape_B_test_tmp,
+
+        "ball_A_color":ball_A_color,
+        "ball_B_color":ball_B_color,
+
+            // Pattern-assignment labels: A = 5 selects rotation in A; A = 0 selects frequency change in A.
+        "ball_A_color_change_rate":0,
+        "ball_B_color_change_rate":5,
+
+        "ball_A_vertical":vertical_tmp_A,
+        "ball_B_vertical":vertical_tmp_B,
+
+        "responseC":"null",
+        "browser":getBrowser(),
+        "subjectID":useSubjectID,
+        "startTime":"null",
+        "endTime":"null",
+        "reactTime":"null",
+    });
+}
+
+
+    // Randomize the order of all generated trials before returning them.
+trialsInfo = shuffle(trialsInfo);
+return trialsInfo;
+}
+
+
+// --------------------------------------
+// Main experiment design
+// --------------------------------------
+// Array that will hold all main experimental trials.
 var trialsInfo = [];
 
+
+// Random subject ID used in saved trial data.
 var useSubjectID = Math.floor(Math.random() * 10000000);
 
-var nRepetitions = 22
-var frame = trialGenerator(nRepetitions,trialsInfo);
+
+// Number of repetitions per condition set for the main experiment.
+// The eight condition blocks produce 264 main trials with 22 repetitions.
+var nRepetitions = 22;
+
+
+// Generate the full main experiment trial list.
+var frame = trialGenerator(nRepetitions, trialsInfo);
+// Total number of main experiment trials.
 var nTrials = frame.length;
 
+// --------------------------------------
+// Training design
+// --------------------------------------
+// Array that will hold all training trials.
 var trialsInfo_training = [];
-var nRepetitions_training = 1;//2
-var frame_training = trialGenerator(nRepetitions_training,trialsInfo_training);
+
+
+// Number of repetitions per condition set for training.
+// The eight condition blocks produce 12 training trials with one repetition.
+var nRepetitions_training = 1; // original comment: //2
+
+// Generate the training trial list.
+var frame_training = trialGenerator(nRepetitions_training, trialsInfo_training);
+// Total number of training trials.
 var nTrials_training = frame_training.length;
 
+
+// --------------------------------------
+// Browser and participant identifiers
+// --------------------------------------
+// Save detected browser type.
 var browser = getBrowser();
+// Save subject ID parsed from the URL, if available.
 var subjectID = getSubjectID();
 
-//---------------------------------------
-//-----------FUNCTIONS BEGIN-------------
-//---------------------------------------
-/* Fisher-Yates shuffle */
+
+// ---------------------------------------
+// Utility and stimulus functions
+// ---------------------------------------
+// Randomizes the order of elements in an array in place.
+// Used to shuffle the generated trial list before the experiment begins.
 function shuffle(o){
     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
         return o;
 }
+
+
+// Returns a random integer from min (inclusive) to max (exclusive).
 function random(min,max) {
     const num = Math.floor(Math.random() * (max - min)) + min;
     return num;
 }
+
+
+// ---------------------------------------
+// Ball object
+// ---------------------------------------
+// Each patterned disk in the experiment is represented as a Ball object.
+// The object stores position and size, and later gains methods
+// for drawing its pattern and updating its position over time.
 function Ball(x,y,size) {
     this.x = x;
     this.y = y;
-   
     this.size = size;
 };
-var nDots = 1; 
-var dotRadius = 40; //Radius of each dot in pixels
+
+
+// ---------------------------------------
+// Ball display parameters
+// ---------------------------------------
+var nDots = 1;
+var dotRadius = 40; // Radius of each disk in pixels
 var balls = [];
 
 var x_0_A;
 var y_0_A;
-function generateNewBalls_A() { // the ball on the left at beginning
-    
+
+// ---------------------------------------
+// Create disk A
+// ---------------------------------------
+// Generates the left disk at its starting position with the specified radius.
+function generateNewBalls_A() {
+
+
     var x_0s = [];
     var y_0s = [];
     var dist_tmp = [];
@@ -851,21 +1070,26 @@ function generateNewBalls_A() { // the ball on the left at beginning
     y_0_A = canvasHeight/2;
     x_0s.push(x_0_A);
     y_0s.push(y_0_A);
-   
     let ball = new Ball(
         x_0_A,
         y_0_A,
-   
         dotRadius,
-        );
+    );
     balls.push(ball);
     return balls;
 }
+
+
+// Initial coordinates for disk B (the right disk).
 var x_0_B;
 var y_0_B;
-function generateNewBalls_B() { // the ball on the right at beginning
-    // colorInd = balls_colorArray[ball_B_color];
-    // let colorNums = [];
+
+// ---------------------------------------
+// Create disk B
+// ---------------------------------------
+// Generates the right disk at its starting position with the specified radius.
+function generateNewBalls_B() {
+
     var x_0s = [];
     var y_0s = [];
     var dist_tmp = [];
@@ -873,162 +1097,142 @@ function generateNewBalls_B() { // the ball on the right at beginning
     y_0_B = canvasHeight/2;
     x_0s.push(x_0_B);
     y_0s.push(y_0_B);
-    // var colorNum = colorInd;
     let ball = new Ball(
         x_0_B,
         y_0_B,
-        // colorArray[colorNum],
         dotRadius,
-        );
+    );
     balls.push(ball);
-    // colorNums.push(colorNum);
     return balls;
 }
 
-let color = "red"
+// Drawing-state variable. The drawing functions use the canvas fill and stroke
+// styles; this variable is not referenced by those functions.
+let color = "red";
 
-// Ball.prototype.draw_balls = function() {
-//     // Base color fill
-//     ctx_L.beginPath();
-//     ctx_L.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-//     ctx_L.fill();
-//     ctx_L.stroke();
-
-//     // Adding vertical stripes with equal spacing
-//     const stripeWidth = 5; // Width of the stripes
-//     const spaceBetween = stripeWidth; // Space between stripes equals the stripe width
-//     const totalWidth = stripeWidth + spaceBetween; // Total width for each stripe and its following space
-
-//     // Calculate the number of stripes needed, accounting for the spaces between them
-//     const numberOfStripes = Math.floor((2 * this.size) / totalWidth);
-
-//     ctx_L.fillStyle = 'grey'; // Color of the stripes
-
-//     for (let i = -numberOfStripes; i < numberOfStripes; i++) {
-//         let xPos = this.x + i * totalWidth;
-
-//         // Drawing each stripe
-//         ctx_L.beginPath();
-//         // Only draw if within the left and right bounds of the circle
-//         if (xPos + stripeWidth/2 < this.x + this.size && xPos - stripeWidth/2 > this.x - this.size) {
-//             // Calculate the height of the ends of each stripe within the circle
-//             let heightDiff = Math.sqrt(this.size ** 2 - (xPos - this.x) ** 2);
-
-//             ctx_L.moveTo(xPos, this.y - heightDiff);
-//             ctx_L.lineTo(xPos, this.y + heightDiff);
-//             ctx_L.lineWidth = stripeWidth;
-//             ctx_L.stroke();
-//         }
-//     }
-// };
-
-// // Assuming there's a global time variable that updates with each frame, e.g., time += deltaTime;
+// Shared counter used to calculate the changing stripe width.
+// It advances whenever the frequency-pattern disk is drawn and is not reset
+// between trials.
 let time = 0;
 
-Ball.prototype.draw_balls_frequency = function() {
-    // Set constant stroke width for the circle's circumference
-    ctx_L.lineWidth = 6; // Set the stroke width for the circle
 
-    // Base color fill and constant stroke for the circle
+// ---------------------------------------
+// Ball drawing method
+// ---------------------------------------
+// Draws the disk as a filled circle at its current x/y position.
+// ---------------------------------------
+// Ball drawing method: changing spatial frequency
+// ---------------------------------------
+// Draw a circular disk with vertical stripes whose width varies sinusoidally
+// between 2 and 10 pixels. Gaps equal the stripe width, so spacing varies too.
+// Stripe orientation remains fixed. The oscillation uses time * 0.05.
+// Draw stripe segments within the circular boundary, then increment time.
+Ball.prototype.draw_balls_frequency = function() {
+    ctx_L.lineWidth = 6;
     ctx_L.beginPath();
     ctx_L.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx_L.fill();
     ctx_L.stroke();
+    const minStripeWidth = 2;   // finest stripes
+    const maxStripeWidth = 10;  // broadest stripes
+    const frequencyChangeRate = 0.05;
 
-    // Time-dependent parameters for changing spatial frequency
-    const minStripeWidth = 2; // Minimum stripe width
-    const maxStripeWidth = 10; // Maximum stripe width
-    const frequencyChangeRate = 0.05; // Rate at which spatial frequency changes
-
-    // Calculate current spatial frequency based on time
-    const currentSpatialFrequency = Math.sin(time * frequencyChangeRate) * (maxStripeWidth - minStripeWidth) / 2 + (maxStripeWidth + minStripeWidth) / 2;
+    const currentSpatialFrequency =
+        Math.sin(time * frequencyChangeRate) *
+        (maxStripeWidth - minStripeWidth) / 2 +
+        (maxStripeWidth + minStripeWidth) / 2;
 
     let stripeWidth = currentSpatialFrequency;
-    let spaceBetween = stripeWidth; // Space between stripes is equal to the stripe width
-    
-    // Calculate starting position
-    let xPos = this.x - this.size ;
+    let spaceBetween = stripeWidth;
+    let xPos = this.x - this.size;
     while (xPos < this.x + this.size) {
-        // Only draw stripes within the ball's boundary
-        if (Math.abs(xPos - this.x) < this.size - 4) {
-            let heightDiff = Math.sqrt(this.size ** 2 - (xPos - this.x) ** 2);
 
+        if (Math.abs(xPos - this.x) < this.size - 4) {
+            let heightDiff = Math.sqrt(
+                this.size ** 2 - (xPos - this.x) ** 2
+            );
             ctx_L.beginPath();
             ctx_L.moveTo(xPos, this.y - heightDiff);
             ctx_L.lineTo(xPos, this.y + heightDiff);
-            ctx_L.lineWidth = stripeWidth; // Set the variable width for the stripes
+
+            ctx_L.lineWidth = stripeWidth;
             ctx_L.stroke();
         }
-        
-        // Move to the next position for the next stripe
+
         xPos += stripeWidth + spaceBetween;
     }
 
-    // Update time variable for the next frame
-    time += 1; // Increment time by 1 or adjust based on your animation loop's timing
+
+    time += 1;
 };
 
+// Shared stripe-orientation angle; it is not reset between trials.
+let rotationAngle = 0; // current orientation angle
 
-let rotationAngle = 0; // Initial rotation angle
 
+// ---------------------------------------
+// Ball drawing method: changing orientation
+// ---------------------------------------
+// Save the canvas state and rotate the drawing coordinates around the disk center.
+// Draw a circular disk with 5-pixel stripes and 5-pixel gaps, then restore the state.
+// Increment rotationAngle by 0.05 radians after each drawing.
+// Stripe width and spacing remain constant while orientation changes.
 Ball.prototype.draw_balls_rotate = function() {
-    // Save the current context state
+
     ctx_L.save();
-
-    // Move the rotation point to the ball's center
     ctx_L.translate(this.x, this.y);
-
-    // Rotate the canvas
     ctx_L.rotate(rotationAngle);
-
-    // Move back from the center to the original position
     ctx_L.translate(-this.x, -this.y);
-
-    // Base color fill
     ctx_L.beginPath();
     ctx_L.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx_L.fill();
-    ctx_L.lineWidth = 6; // Making the border thicker
+    ctx_L.lineWidth = 6;
     ctx_L.stroke();
-
-    // Adding vertical stripes with equal spacing
-    const stripeWidth = 5; // Width of the stripes
-    const spaceBetween = stripeWidth; // Space between stripes equals the stripe width
-    const totalWidth = stripeWidth + spaceBetween; // Total width for each stripe and its following space
-    const numberOfStripes = Math.floor((2 * this.size) / totalWidth);
-
-    ctx_L.fillStyle = 'grey'; // Color of the stripes
+    const stripeWidth = 5;
+    const spaceBetween = stripeWidth;
+    const totalWidth = stripeWidth + spaceBetween;
+    const numberOfStripes =
+        Math.floor((2 * this.size) / totalWidth);
+    ctx_L.fillStyle = 'grey';
 
     for (let i = -numberOfStripes; i < numberOfStripes; i++) {
         let xPos = this.x + i * totalWidth;
-
-        // Drawing each stripe
         ctx_L.beginPath();
-        if (xPos + stripeWidth / 2 < this.x + this.size && xPos - stripeWidth / 2 > this.x - this.size) {
-            let heightDiff = Math.sqrt(this.size ** 2 - (xPos - this.x) ** 2);
 
+        if (
+            xPos + stripeWidth / 2 < this.x + this.size &&
+            xPos - stripeWidth / 2 > this.x - this.size
+        ) {
+            let heightDiff = Math.sqrt(
+                this.size ** 2 - (xPos - this.x) ** 2
+            );
             ctx_L.moveTo(xPos, this.y - heightDiff);
             ctx_L.lineTo(xPos, this.y + heightDiff);
+
             ctx_L.lineWidth = stripeWidth;
             ctx_L.stroke();
-            
         }
     }
 
-    // Restore the context to its original state
     ctx_L.restore();
 
-    // Update rotation angle for the next frame
-    rotationAngle += 0.05; // Adjust this value to control the speed of rotation
+    rotationAngle += 0.05;
 };
 
+// ---------------------------------------
+// Motion parameters
+// ---------------------------------------
+var velX = 4.5; // original value preserved
 
-
-
-
-var velX = 4.5;//4.5
 // var velY = 1.5;
 var edgeX = 100;
+
+// ---------------------------------------
+// Position update for disk A
+// ---------------------------------------
+// Moves the left disk toward the center/occluder.
+// The y-position is adjusted across different x-ranges to create a curved path.
+// Once the disk reaches the center, it is placed at its assigned final vertical offset.
 Ball.prototype.updatePosition_A = function() { //define the moving path
     if (this.x < canvasWidth/2) {
         this.x = this.x + velX;
@@ -1056,10 +1260,17 @@ Ball.prototype.updatePosition_A = function() { //define the moving path
     } 
     else {
         this.x = canvasWidth/2;
-        this.y = canvasHeight/2+vertical_tmp_A;
+        this.y = canvasHeight/2+vertical_tmp_A; //vartical_tmp_A is 50 , and B is - 50
     }
 };
-Ball.prototype.updatePosition_B = function() {    
+
+// ---------------------------------------
+// Position update for disk B
+// ---------------------------------------
+// Moves the right disk toward the center/occluder.
+// As with disk A, the y-position changes across x-ranges to create the motion path.
+// Once the disk reaches the center, it is placed at its assigned final vertical offset.
+Ball.prototype.updatePosition_B = function() {    //this is the right ball
     if (this.x > canvasWidth/2) {
         this.x = this.x - velX;
 
@@ -1091,384 +1302,565 @@ Ball.prototype.updatePosition_B = function() {
     }
 };
 
-// exp procedures 
+
+// ---------------------------------------
+// Experiment flow procedures
+// ---------------------------------------
+// Advance from the first instruction screen to the training instructions.
 function continueInstruction1() {
     $('#Instruction1').hide();
     $('#continueInstructionButton1').hide();
-    $('#Instruction2').show(); 
+    $('#Instruction2').show();
     $('#startTrainingButton').show();
 }
-var shapeTmp;
-let balls_A = [];
-let balls_B = [];
-var trainingTrial = 0;
+
+var shapeTmp;      // temporary holder for stimulus identity
+let balls_A = [];  // left disk object
+let balls_B = [];  // right disk object
+
+var trainingTrial = 0; // current practice trial index
+
+// ---------------------------------------
+// Start the first training trial
+// ---------------------------------------
+// This function presents training trial 0.
+// It is separate from showTrials_training() because here the trial index is
+// not incremented first; it starts directly at trainingTrial = 0.
 function showTrials_training_0() {
+
     responseAcceptable = false;
+
     $('#title').hide();
     $('#Instruction2').hide();
     $('#startTrainingButton').hide();
-
-    balls = generateNewBalls_A(trialsInfo_training[trainingTrial].ball_A_color);
+    balls = generateNewBalls_A(
+        trialsInfo_training[trainingTrial].ball_A_color
+    );
     balls_A = balls;
     balls = [];
-    balls = generateNewBalls_B(trialsInfo_training[trainingTrial].ball_B_color);
+    balls = generateNewBalls_B(
+        trialsInfo_training[trainingTrial].ball_B_color
+    );
     balls_B = balls;
     balls = [];
     startTrialTime = new Date();
-    trialsInfo_training[trainingTrial].startTime= startTrialTime;
-    $('#canvas_L').show(); 
+    trialsInfo_training[trainingTrial].startTime = startTrialTime;
+    $('#canvas_L').show();
     animate();
 }
+
+// ---------------------------------------
+// Advance to the next training trial
+// ---------------------------------------
+// This function is used after the first training trial.
+// Unlike showTrials_training_0(), it increments trainingTrial before presenting
+// the next trial, and moves to the main experiment when training is finished.
 function showTrials_training() {
+
     responseAcceptable = false;
+
     $('#Instruction4').hide();
     $('#Instruction6').hide();
     $('#Instruction7').hide();
     $('#nextTrainingTrialButton').hide();
-    trainingTrial ++;
+
+    trainingTrial++;
 
     if (trainingTrial <= trialsInfo_training.length-1) {
-        balls = generateNewBalls_A(trialsInfo_training[trainingTrial].ball_A_color);
+        balls = generateNewBalls_A(
+            trialsInfo_training[trainingTrial].ball_A_color
+        );
         balls_A = balls;
         balls = [];
-        balls = generateNewBalls_B(trialsInfo_training[trainingTrial].ball_B_color);
+        balls = generateNewBalls_B(
+            trialsInfo_training[trainingTrial].ball_B_color
+        );
         balls_B = balls;
         balls = [];
         $('#Instruction2').hide();
-        // ctx_L.fillStyle = 'gray';
-        ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
-         startTrialTime = new Date();
-        trialsInfo_training[trainingTrial].startTime= startTrialTime;
+        ctx_L.clearRect(
+            0,0,canvas_L.width, canvas_L.height
+        );
+        startTrialTime = new Date();
+        trialsInfo_training[trainingTrial].startTime =
+            startTrialTime;
         $('#canvas_L').show();
-        animate(); 
+        animate();
     } else {
+
         $('#Instruction3').show();
         $('#startExpButton').show();
     }
 }
+
 var curTrial = 0;
+
+// ---------------------------------------
+// Start the first main experiment trial
+// ---------------------------------------
+// This function presents main trial 0.
+// As with training, it is separate from showTrials_exp() because the first
+// trial is shown without incrementing the trial counter first.
 function showTrials_exp_0() {
+
     responseAcceptable = false;
+
     $('#title').hide();
     $('#Instruction3').hide();
     $('#startExpButton').hide();
-
-    balls = generateNewBalls_A(trialsInfo[curTrial].ball_A_color);
+    balls = generateNewBalls_A(
+        trialsInfo[curTrial].ball_A_color
+    );
     balls_A = balls;
     balls = [];
-    balls = generateNewBalls_B(trialsInfo[curTrial].ball_B_color);
+    balls = generateNewBalls_B(
+        trialsInfo[curTrial].ball_B_color
+    );
     balls_B = balls;
     balls = [];
-
     ctx_L.fillStyle = 'gray';
-    ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
+    ctx_L.clearRect(
+        0,0,canvas_L.width, canvas_L.height
+    );
     startTrialTime = new Date();
-    trialsInfo[curTrial].startTime= startTrialTime;
+    trialsInfo[curTrial].startTime = startTrialTime;
     $('#canvas_L').show();
-    animate();  
+    animate();
 }
+
+// ---------------------------------------
+// Advance to the next main experiment trial
+// ---------------------------------------
+// This function is called after the first main trial.
+// It increments the trial index, prepares the next trial, and when all trials
+// are finished it moves to the final submission screen.
 function showTrials_exp() {
+
     responseAcceptable = false;
     curTrial++;
     $('#Instruction4').hide();
     $('#Instruction6').hide();
     $('#Instruction7').hide();
     $('#nextTrialButton').hide();
-    
-    if (curTrial <= trialsInfo.length - 1) {
 
-        balls = generateNewBalls_A(trialsInfo[curTrial].ball_A_color);
+    if (curTrial <= trialsInfo.length - 1) {
+        balls = generateNewBalls_A(
+            trialsInfo[curTrial].ball_A_color
+        );
         balls_A = balls;
         balls = [];
-        balls = generateNewBalls_B(trialsInfo[curTrial].ball_B_color);
+        balls = generateNewBalls_B(
+            trialsInfo[curTrial].ball_B_color
+        );
         balls_B = balls;
         balls = [];
-
         ctx_L.fillStyle = 'gray';
-        ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
+        ctx_L.clearRect(
+            0,0,canvas_L.width, canvas_L.height
+        );
         startTrialTime = new Date();
-        trialsInfo[curTrial].startTime= startTrialTime;
-        $('#canvas_L').show(); 
-        animate();  
+        trialsInfo[curTrial].startTime = startTrialTime;
+        $('#canvas_L').show();
+        animate();
     } else {
         $('#Instruction5').show();
         $('#submitButton').show();
     }
 }
 
+// ---------------------------------------
+// Timing and stimulus presentation variables
+// ---------------------------------------
+// Timeout handles used to control the sequence of stimulus presentation.
+// These timeout handles are unused; animate() controls preview presentation.
 var myTimeout10;
 var myTimeout11;
 var myTimeout12;
+
+
+// Variables storing the indices of the shapes shown during preview and test.
 var shapeInd_A_pre;
 var shapeInd_A_test;
 var shapeInd_B_pre;
 var shapeInd_B_test;
-var colorDisk = 500;//500
-var previewShape = 1200;
 
+
+// Timing parameters (in milliseconds).
+// These values are used in the reaction-time calculation;
+// the display phases themselves are controlled by the animation counter.
+var colorDisk = 500;     // original value preserved
+var previewShape = 1200; // original value preserved
+
+// ---------------------------------------
+// Animation Variables
+// ---------------------------------------
+// Counter tracking the number of animation frames since stimulus onset.
 var refresh_stimuliOnset_test = 0;
 
-var color_change_rate_A = 1;//0
-var color_change_rate_B = 1;//0
+// Stored pattern-assignment variables loaded from the current trial.
+// The two stored values are 5 and 0; they label the assignment of pattern types.
+var color_change_rate_A = 1; // original value preserved
+// Stored pattern-assignment variables loaded from the current trial.
+var color_change_rate_B = 1; // original value preserved
 
+// Handles for animation timing.
 var myTimeout;
 var myReq;
+
+// Indicates whether participant responses are currently allowed.
 var startResponseTiming = false;
+
+// Parameters controlling the movement of the occluder.
 var occluder_velX = 0;
-var occluder_velY = 40;//40
+var occluder_velY = 40;
+
 var occluder_posX = 0;
 var occluder_posY = 0;
 
-function animate() { // make the balls and the shapes move together, and occluder when spatiotemporal feature is inconsistent
-    myTimeout = setTimeout (function() {     
-     ctx_L.fillStyle = 'gray';
-    ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);
+// ---------------------------------------
+// Animation Function
+// ---------------------------------------
+// Animates the movement of the disks toward the occluder, removes the occluder,
+// and then displays the test shapes.
+// Draw both dynamic patterns throughout the preview, motion, reveal, and test.
+// The assignment is selected using trialsInfo[curTrial].ball_A_color_change_rate:
+// 0 gives frequency change in A and rotation in B; 5 gives rotation in A and
+// frequency change in B. This lookup also determines the patterns during training.
+function animate() {
 
-    if (trainingTrial < trialsInfo_training.length) {
-        vertical_tmp_A = trialsInfo_training[trainingTrial].ball_A_vertical;
-        vertical_tmp_B = trialsInfo_training[trainingTrial].ball_B_vertical;
+    myTimeout = setTimeout(function() {
 
-        color_change_rate_A = trialsInfo_training[trainingTrial].ball_A_color_change_rate;
-        color_change_rate_B = trialsInfo_training[trainingTrial].ball_B_color_change_rate;
+        ctx_L.fillStyle = 'gray';
+        ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);
 
-        shapeInd_A_pre = trialsInfo_training[trainingTrial].shape_A_pre_ind;
-        shapeInd_B_pre = trialsInfo_training[trainingTrial].shape_B_pre_ind; 
-    }
-    if (trainingTrial == trialsInfo_training.length && curTrial < trialsInfo.length) {
-        vertical_tmp_A = trialsInfo[curTrial].ball_A_vertical;
-        vertical_tmp_B = trialsInfo[curTrial].ball_B_vertical;
+        if (trainingTrial < trialsInfo_training.length) {
 
-        color_change_rate_A = trialsInfo[curTrial].ball_A_color_change_rate;
-        color_change_rate_B = trialsInfo[curTrial].ball_B_color_change_rate;
+            vertical_tmp_A =
+                trialsInfo_training[trainingTrial].ball_A_vertical;
+            vertical_tmp_B =
+                trialsInfo_training[trainingTrial].ball_B_vertical;
 
-        shapeInd_A_pre = trialsInfo[curTrial].shape_A_pre_ind;
-        shapeInd_B_pre = trialsInfo[curTrial].shape_B_pre_ind;
-    }
+            color_change_rate_A =
+                trialsInfo_training[trainingTrial].ball_A_color_change_rate;
+            color_change_rate_B =
+                trialsInfo_training[trainingTrial].ball_B_color_change_rate;
 
-    refresh_stimuliOnset_test ++;
-    
-    if (refresh_stimuliOnset_test < 30) {// fresh rate at the end is 16.6 ms. 76 times 16 is 1200 ms, that is what this keeps count of, so it is a timer. This period is just showing the balls and shape. 
-        ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
-
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
-            balls_A[0].draw_balls_frequency();
-            balls_B[0].draw_balls_rotate();
+            shapeInd_A_pre =
+                trialsInfo_training[trainingTrial].shape_A_pre_ind;
+            shapeInd_B_pre =
+                trialsInfo_training[trainingTrial].shape_B_pre_ind;
         }
 
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
-            balls_A[0].draw_balls_rotate();
-            balls_B[0].draw_balls_frequency();
+
+        if (trainingTrial == trialsInfo_training.length &&
+            curTrial < trialsInfo.length) {
+
+            vertical_tmp_A =
+                trialsInfo[curTrial].ball_A_vertical;
+            vertical_tmp_B =
+                trialsInfo[curTrial].ball_B_vertical;
+
+            color_change_rate_A =
+                trialsInfo[curTrial].ball_A_color_change_rate;
+            color_change_rate_B =
+                trialsInfo[curTrial].ball_B_color_change_rate;
+
+            shapeInd_A_pre =
+                trialsInfo[curTrial].shape_A_pre_ind;
+            shapeInd_B_pre =
+                trialsInfo[curTrial].shape_B_pre_ind;
+        }
+     
+        refresh_stimuliOnset_test ++;
+
+    // Show the stationary disks without shapes (counts 1-29).
+        if (refresh_stimuliOnset_test < 30) {
+
+            ctx_L.drawImage(
+                occluder,
+                canvasWidth/2-100,
+                canvasHeight/2-150
+            );
+
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
+                balls_A[0].draw_balls_frequency();
+                balls_B[0].draw_balls_rotate();
+            }
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
+                balls_A[0].draw_balls_rotate();
+                balls_B[0].draw_balls_frequency();
+            }
         }
 
-        // balls_A[0].draw_balls();
-        // balls_A[0].updateColor_A_1();
 
-        // balls_B[0].draw_balls();
-        // balls_B[0].updateColor_B_1();
-    }
+    // Preview Phase: show the preview shapes in the disks (counts 30-105).
+        if (refresh_stimuliOnset_test >= 30 &&
+            refresh_stimuliOnset_test < 106) {
 
-    if (refresh_stimuliOnset_test >= 30 && refresh_stimuliOnset_test < 106) {// fresh rate at the end is 16.6 ms. 76 times 16 is 1200 ms, that is what this keeps count of, so it is a timer. This period is just showing the balls and shape. 
-        ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
+            ctx_L.drawImage(
+                occluder,
+                canvasWidth/2-100,
+                canvasHeight/2-150
+            );
 
-        // balls_A[0].draw_balls();
-        // balls_A[0].updateColor_A_1();
-        // balls_B[0].draw_balls();
-        // balls_B[0].updateColor_B_1();
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
+                balls_A[0].draw_balls_frequency();
+                balls_B[0].draw_balls_rotate();
+            }
 
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
-            balls_A[0].draw_balls_frequency();
-            balls_B[0].draw_balls_rotate();
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
+                balls_A[0].draw_balls_rotate();
+                balls_B[0].draw_balls_frequency();
+            }
+
+            if (shapeInd_A_pre == 0) {
+                shapeTmp = shape_0
+            } else if (shapeInd_A_pre == 1) {
+                shapeTmp = shape_1
+            } else if (shapeInd_A_pre == 2) {
+                shapeTmp = shape_2
+            } else if (shapeInd_A_pre == 3) {
+                shapeTmp = shape_3
+            } else if (shapeInd_A_pre == 4) {
+                shapeTmp = shape_4
+            }
+
+            ctx_L.drawImage(
+                shapeTmp,
+                balls_A[0].x-27,
+                balls_A[0].y-27
+            );
+
+            if (shapeInd_B_pre == 0) {
+                shapeTmp = shape_0
+            } else if (shapeInd_B_pre == 1) {
+                shapeTmp = shape_1
+            } else if (shapeInd_B_pre == 2) {
+                shapeTmp = shape_2
+            } else if (shapeInd_B_pre == 3) {
+                shapeTmp = shape_3
+            } else if (shapeInd_B_pre == 4) {
+                shapeTmp = shape_4
+            }
+
+            ctx_L.drawImage(
+                shapeTmp,
+                balls_B[0].x-27,
+                balls_B[0].y-27
+            );
         }
 
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
-            balls_A[0].draw_balls_rotate();
-            balls_B[0].draw_balls_frequency();
+
+    // Remove the shapes and move the disks behind the occluder (counts 106-205).
+        if (refresh_stimuliOnset_test >= 106 &&
+            refresh_stimuliOnset_test < 206) {
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
+                balls_A[0].draw_balls_frequency();
+    // Draw the assigned dynamic pattern for disk B.
+                balls_B[0].draw_balls_rotate();
+            }
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
+                balls_A[0].draw_balls_rotate();
+                balls_B[0].draw_balls_frequency();
+            }
+
+            balls_A[0].updatePosition_A();
+            balls_B[0].updatePosition_B();
+
+            ctx_L.drawImage(
+                occluder,
+                canvasWidth/2-100,
+                canvasHeight/2-150
+            );
         }
 
-        if (shapeInd_A_pre == 0) {
-            shapeTmp = shape_0
-        } else if (shapeInd_A_pre == 1) {
-            shapeTmp = shape_1
-        } else if (shapeInd_A_pre == 2) {
-            shapeTmp = shape_2
-        } else if (shapeInd_A_pre == 3) {
-            shapeTmp = shape_3
-        } else if (shapeInd_A_pre == 4) {
-            shapeTmp = shape_4
-        }
-        ctx_L.drawImage(shapeTmp, balls_A[0].x-27, balls_A[0].y-27)
 
-        if (shapeInd_B_pre == 0) {
-            shapeTmp = shape_0
-        } else if (shapeInd_B_pre == 1) {
-            shapeTmp = shape_1
-        } else if (shapeInd_B_pre == 2) {
-            shapeTmp = shape_2
-        } else if (shapeInd_B_pre == 3) {
-            shapeTmp = shape_3
-        } else if (shapeInd_B_pre == 4) {
-            shapeTmp = shape_4
-        }
-        ctx_L.drawImage(shapeTmp, balls_B[0].x-27, balls_B[0].y-27)
-    }
+    // Keep the occluder at its current position while drawing the disks (counts 206-230).
+        if (refresh_stimuliOnset_test >= 206 &&
+            refresh_stimuliOnset_test <= 230) {
 
-    if (refresh_stimuliOnset_test >= 106 && refresh_stimuliOnset_test < 206) {// this is the movement part. 
-        
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
-            balls_A[0].draw_balls_frequency();
-            balls_B[0].draw_balls_rotate();
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
+                balls_A[0].draw_balls_frequency();
+                balls_B[0].draw_balls_rotate();
+            }
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
+                balls_A[0].draw_balls_rotate();
+                balls_B[0].draw_balls_frequency();
+            }
+
+            balls_A[0].updatePosition_A();
+            balls_B[0].updatePosition_B();
+
+            ctx_L.drawImage(
+                occluder,
+                canvasWidth/2-100-occluder_posX,
+                canvasHeight/2-150-occluder_posY
+            );
         }
 
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
-            balls_A[0].draw_balls_rotate();
-            balls_B[0].draw_balls_frequency();
-        }
-        // balls_A[0].draw_balls();
-        // balls_A[0].updateColor_A_1();
-        balls_A[0].updatePosition_A();
+    // Reveal the disks without shapes by moving the occluder upward (counts 230-260).
+        if (refresh_stimuliOnset_test >= 230 &&
+            refresh_stimuliOnset_test <= 260) {
 
-        // balls_B[0].draw_balls();
-        // balls_B[0].updateColor_B_1();
-        balls_B[0].updatePosition_B();
 
-        ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
-    }
-    
-    if (refresh_stimuliOnset_test >= 206 && refresh_stimuliOnset_test <= 230) {// this is the occlusion part
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
-            balls_A[0].draw_balls_frequency();
-            balls_B[0].draw_balls_rotate();
-        }
+        // Determine test shapes for training or main experiment trials.
+            if (trainingTrial <= trialsInfo_training.length-1) {
+                shapeInd_A_test =
+                    trialsInfo_training[trainingTrial].shape_A_test_ind;
+                shapeInd_B_test =
+                    trialsInfo_training[trainingTrial].shape_B_test_ind;
+            }
 
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
-            balls_A[0].draw_balls_rotate();
-            balls_B[0].draw_balls_frequency();
-        }
+            if (trainingTrial == trialsInfo_training.length &&
+                curTrial>=0) {
+                shapeInd_A_test =
+                    trialsInfo[curTrial].shape_A_test_ind;
+                shapeInd_B_test =
+                    trialsInfo[curTrial].shape_B_test_ind;
+            }
 
-        // balls_A[0].draw_balls();
-        // balls_A[0].updateColor_A_1();
-        balls_A[0].updatePosition_A();
-        
-        // balls_B[0].draw_balls();
-        // balls_B[0].updateColor_B_1();
-        balls_B[0].updatePosition_B();
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
+                balls_A[0].draw_balls_frequency();
+                balls_B[0].draw_balls_rotate();
+            }
 
-        ctx_L.drawImage(occluder,canvasWidth/2-100-occluder_posX,canvasHeight/2-150-occluder_posY);
-    }  
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
+                balls_A[0].draw_balls_rotate();
+                balls_B[0].draw_balls_frequency();
+            }
 
-    if (refresh_stimuliOnset_test >= 230 && refresh_stimuliOnset_test <= 260) {//this is the reveal part without shapes
+            balls_A[0].updatePosition_A();
+            balls_B[0].updatePosition_B();
 
-        if (trainingTrial <= trialsInfo_training.length-1) {
-            shapeInd_A_test = trialsInfo_training[trainingTrial].shape_A_test_ind;
-            shapeInd_B_test = trialsInfo_training[trainingTrial].shape_B_test_ind;
-        }
+            ctx_L.drawImage(
+                occluder,
+                canvasWidth/2-100-occluder_posX,
+                canvasHeight/2-150-occluder_posY
+            );
 
-        if (trainingTrial == trialsInfo_training.length && curTrial>=0) {
-            shapeInd_A_test = trialsInfo[curTrial].shape_A_test_ind;
-            shapeInd_B_test = trialsInfo[curTrial].shape_B_test_ind;
+            occluder_posY =
+                occluder_posY + occluder_velY;
         }
 
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
-            balls_A[0].draw_balls_frequency();
-            balls_B[0].draw_balls_rotate();
+
+    // Display the test shapes and allow responses (counts above 260).
+        if (refresh_stimuliOnset_test > 260) {
+
+            if (trainingTrial <= trialsInfo_training.length-1) {
+                shapeInd_A_test =
+                    trialsInfo_training[trainingTrial].shape_A_test_ind;
+                shapeInd_B_test =
+                    trialsInfo_training[trainingTrial].shape_B_test_ind;
+            }
+
+            if (trainingTrial == trialsInfo_training.length &&
+                curTrial>=0) {
+                shapeInd_A_test =
+                    trialsInfo[curTrial].shape_A_test_ind;
+                shapeInd_B_test =
+                    trialsInfo[curTrial].shape_B_test_ind;
+            }
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
+                balls_A[0].draw_balls_frequency();
+                balls_B[0].draw_balls_rotate();
+            }
+
+            if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
+                balls_A[0].draw_balls_rotate();
+                balls_B[0].draw_balls_frequency();
+            }
+
+            balls_A[0].updatePosition_A();
+            balls_B[0].updatePosition_B();
+
+
+
+        // Draw test shape for disk A.
+            if (shapeInd_A_test == 0) {
+                shapeTmp = shape_0
+            } else if (shapeInd_A_test == 1) {
+                shapeTmp = shape_1
+            } else if (shapeInd_A_test == 2) {
+                shapeTmp = shape_2
+            } else if (shapeInd_A_test == 3) {
+                shapeTmp = shape_3
+            } else if (shapeInd_A_test == 4) {
+                shapeTmp = shape_4
+            }
+
+            ctx_L.drawImage(
+                shapeTmp,
+                balls_A[0].x-27,
+                balls_A[0].y-27
+            );
+
+            // Draw test shape for disk B.
+            if (shapeInd_B_test == 0) {
+                shapeTmp = shape_0
+            } else if (shapeInd_B_test == 1) {
+                shapeTmp = shape_1
+            } else if (shapeInd_B_test == 2) {
+                shapeTmp = shape_2
+            } else if (shapeInd_B_test == 3) {
+                shapeTmp = shape_3
+            } else if (shapeInd_B_test == 4) {
+                shapeTmp = shape_4
+            }
+
+            ctx_L.drawImage(
+                shapeTmp,
+                balls_B[0].x-27,
+                balls_B[0].y-27
+            );
+            responseAcceptable = true;
         }
-
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
-            balls_A[0].draw_balls_rotate();
-            balls_B[0].draw_balls_frequency();
-        }
-        // balls_A[0].draw_balls();
-        // balls_A[0].updateColor_A_2();
-        balls_A[0].updatePosition_A();
-        
-        // balls_B[0].draw_balls();
-        // balls_B[0].updateColor_B_2();
-        balls_B[0].updatePosition_B();
-
-        ctx_L.drawImage(occluder,canvasWidth/2-100-occluder_posX,canvasHeight/2-150-occluder_posY);
-        occluder_posY = occluder_posY + occluder_velY;
-    }
-
-    if (refresh_stimuliOnset_test > 260) {//this is the reveal part
-
-        if (trainingTrial <= trialsInfo_training.length-1) {
-            shapeInd_A_test = trialsInfo_training[trainingTrial].shape_A_test_ind;
-            shapeInd_B_test = trialsInfo_training[trainingTrial].shape_B_test_ind;
-        }
-
-        if (trainingTrial == trialsInfo_training.length && curTrial>=0) {
-            shapeInd_A_test = trialsInfo[curTrial].shape_A_test_ind;
-            shapeInd_B_test = trialsInfo[curTrial].shape_B_test_ind;
-        }
-
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 0) {
-            balls_A[0].draw_balls_frequency();
-            balls_B[0].draw_balls_rotate();
-        }
-
-        if (trialsInfo[curTrial].ball_A_color_change_rate == 5) {
-            balls_A[0].draw_balls_rotate();
-            balls_B[0].draw_balls_frequency();
-        }
-        // balls_A[0].draw_balls();
-        // balls_A[0].updateColor_A_2();
-        balls_A[0].updatePosition_A();
-        
-        // balls_B[0].draw_balls();
-        // balls_B[0].updateColor_B_2();
-        balls_B[0].updatePosition_B();
-
-        if (shapeInd_A_test == 0) {
-            shapeTmp = shape_0
-        } else if (shapeInd_A_test == 1) {
-            shapeTmp = shape_1
-        } else if (shapeInd_A_test == 2) {
-            shapeTmp = shape_2
-        } else if (shapeInd_A_test == 3) {
-            shapeTmp = shape_3
-        } else if (shapeInd_A_test == 4) {
-            shapeTmp = shape_4
-        }
-        ctx_L.drawImage(shapeTmp, balls_A[0].x-27, balls_A[0].y-27);
-        
-        if (shapeInd_B_test == 0) {
-            shapeTmp = shape_0
-        } else if (shapeInd_B_test == 1) {
-            shapeTmp = shape_1
-        } else if (shapeInd_B_test == 2) {
-            shapeTmp = shape_2
-        } else if (shapeInd_B_test == 3) {
-            shapeTmp = shape_3
-        } else if (shapeInd_B_test == 4) {
-            shapeTmp = shape_4
-        }
-        ctx_L.drawImage(shapeTmp, balls_B[0].x-27, balls_B[0].y-27);
-        
-        responseAcceptable = true; // only allow response when the occlude is removed/equivalent time in no occluder condition
-    }
-
         myReq = requestAnimationFrame(animate);
+
     }, freshRate)
 };
+
+
+// ---------------------------------------
+// Response recording variables
+// ---------------------------------------
+// Temporary variables used to store the participant's response and reaction time.
 let repsonse_tmp;
+
 let rt_tmp;
-// record keyboard response
+
+// ---------------------------------------
+// Keyboard Response Listener
+// ---------------------------------------
+// Listens for key presses ('1' for "same", '0' for "different") once responses
+// are allowed (i.e., after the occluder is removed).
 window.addEventListener('keydown', function(e) {
+
 if (responseAcceptable == true) {
+
+        // ============================================================
+        // Response: Key '1' (Participant indicates "same")
+        // ============================================================    
     if (e.key == '1') {
+
         endTrialTime = new Date();
         window.cancelAnimationFrame(myReq);
         clearTimeout(myTimeout);
         refresh_stimuliOnset_test = 0;
         occluder_velX = 0;
-        occluder_velY = 40;//40
+        occluder_velY = 40;
         occluder_posX = 0;
         occluder_posY = 0;
         $('#canvas_L').hide();
         $('#Instruction4').show();
         if (trainingTrial <= trialsInfo_training.length-1) {
             $('#nextTrainingTrialButton').show();
-        } 
+        }
         if (trainingTrial == trialsInfo_training.length && curTrial>=0) {
             $('#nextTrialButton').show();
         }
@@ -1480,161 +1872,196 @@ if (responseAcceptable == true) {
         console.log("curTrial" + curTrial);
         console.log("curTrial.length" + trialsInfo.length);
 
-        if (curTrial ==0 && trainingTrial >=0 && trainingTrial < trialsInfo_training.length) {
+            // ----------------------------
+            // Training Trials
+            // ----------------------------       
+        if (curTrial ==0 &&
+            trainingTrial >=0 &&
+            trainingTrial < trialsInfo_training.length) {
             trialsInfo_training[trainingTrial].endTime = endTrialTime;
-            trialsInfo_training[trainingTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
+            trialsInfo_training[trainingTrial].reactTime =
+                endTrialTime - startTrialTime
+                - colorDisk - previewShape - colorDisk - 76*20;
             trialsInfo_training[trainingTrial].responseC = 1;
-            repsonse_tmp = trialsInfo_training[trainingTrial].responseC;
+            repsonse_tmp =
+                trialsInfo_training[trainingTrial].responseC;
             console.log(repsonse_tmp);
-            console.log(trialsInfo_training[trainingTrial].matchType);
-            if (trialsInfo_training[trainingTrial].matchType == 'new' && repsonse_tmp == 1) {
+            console.log(
+                trialsInfo_training[trainingTrial].matchType
+            );
+            if (
+                trialsInfo_training[trainingTrial].matchType == 'new' &&
+                repsonse_tmp == 1
+            ) {
                 $('#Instruction6').show();
-            } 
-            rt_tmp = trialsInfo_training[trainingTrial].reactTime;
+            }
+            rt_tmp =
+                trialsInfo_training[trainingTrial].reactTime;
             if (rt_tmp > 4500) {
                 $('#Instruction7').show();
             }
         }
+            // ----------------------------
+            // Main Experiment Trials
+            // ----------------------------
+        if (curTrial >0 &&
+            curTrial < trialsInfo.length) {
 
-        if (curTrial >0 &&  curTrial < trialsInfo.length) {
-        trialsInfo[curTrial].endTime = endTrialTime;
-        trialsInfo[curTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
-        trialsInfo[curTrial].responseC = 1; 
-        repsonse_tmp = trialsInfo[curTrial].responseC;
-        console.log(trialsInfo[curTrial].matchType);
-        console.log(repsonse_tmp);
-        if (trialsInfo[curTrial].matchType == 'new' && repsonse_tmp == 1) {
-            $('#Instruction6').show();
-        } 
-        rt_tmp = trialsInfo[curTrial].reactTime;
-        if (rt_tmp > 4500) {
-            $('#Instruction7').show();
-        }
+            trialsInfo[curTrial].endTime = endTrialTime;
+
+            trialsInfo[curTrial].reactTime =
+                endTrialTime - startTrialTime
+                - colorDisk - previewShape - colorDisk - 76*20;
+
+            trialsInfo[curTrial].responseC = 1;
+
+            repsonse_tmp = trialsInfo[curTrial].responseC;
+
+            console.log(trialsInfo[curTrial].matchType);
+            console.log(repsonse_tmp);
+
+
+            if (
+                trialsInfo[curTrial].matchType == 'new' &&
+                repsonse_tmp == 1
+            ) {
+                $('#Instruction6').show();
+            }
+
+            rt_tmp = trialsInfo[curTrial].reactTime;
+
+            if (rt_tmp > 4500) {
+                $('#Instruction7').show();
+            }
         }
     }
+
+        // ============================================================
+        // Response: Key '0' (Participant indicates "different")
+        // ============================================================
     if (e.key == '0') {
+
         endTrialTime = new Date();
         window.cancelAnimationFrame(myReq);
         clearTimeout(myTimeout);
         refresh_stimuliOnset_test = 0;
         occluder_velX = 0;
-        occluder_velY = 40;//40
+        occluder_velY = 40;
         occluder_posX = 0;
         occluder_posY = 0;
         $('#canvas_L').hide();
         $('#Instruction4').show();
         if (trainingTrial <= trialsInfo_training.length-1) {
             $('#nextTrainingTrialButton').show();
-        } 
-        if (trainingTrial == trialsInfo_training.length && curTrial>=0) {
+        }
+        if (trainingTrial == trialsInfo_training.length &&
+            curTrial>=0) {
             $('#nextTrialButton').show();
         }
+
         balls_A[0].x = canvasWidth/2-230;
         balls_A[0].y = canvasHeight/2;
         balls_B[0].x = canvasWidth/2+230;
-        balls_B[0].y = canvasHeight/2;   
+        balls_B[0].y = canvasHeight/2;
 
         console.log('curTrial' + curTrial);
         console.log("curTrial.length" + trialsInfo.length);
 
-         if (curTrial ==0 && trainingTrial >=0 && trainingTrial < trialsInfo_training.length) {
-            trialsInfo_training[trainingTrial].endTime = endTrialTime;
-            trialsInfo_training[trainingTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
+            // ----------------------------
+            // Training Trials
+            // ----------------------------
+        if (curTrial ==0 &&
+            trainingTrial >=0 &&
+            trainingTrial < trialsInfo_training.length) {
+            trialsInfo_training[trainingTrial].endTime =
+                endTrialTime;
+            trialsInfo_training[trainingTrial].reactTime =
+                endTrialTime - startTrialTime
+                - colorDisk - previewShape - colorDisk - 76*20;
             trialsInfo_training[trainingTrial].responseC = 0;
-            repsonse_tmp = trialsInfo_training[trainingTrial].responseC;
+            repsonse_tmp =
+                trialsInfo_training[trainingTrial].responseC;
             console.log(repsonse_tmp);
-            console.log(trialsInfo_training[trainingTrial].matchType);
-            if (trialsInfo_training[trainingTrial].matchType == 'same' && repsonse_tmp == 0) {
-                $('#Instruction6').show();
-            } 
-            if (trialsInfo_training[trainingTrial].matchType == 'same_swap' && repsonse_tmp == 0) {
+            console.log(
+                trialsInfo_training[trainingTrial].matchType
+            );
+            if (
+                trialsInfo_training[trainingTrial].matchType == 'same' &&
+                repsonse_tmp == 0
+            ) {
                 $('#Instruction6').show();
             }
-            rt_tmp = trialsInfo_training[trainingTrial].reactTime;
+            if (
+                trialsInfo_training[trainingTrial].matchType == 'same_swap' &&
+                repsonse_tmp == 0
+            ) {
+                $('#Instruction6').show();
+            }
+            rt_tmp =
+                trialsInfo_training[trainingTrial].reactTime;
+
             if (rt_tmp > 4500) {
                 $('#Instruction7').show();
             }
         }
 
-        if (curTrial >0 &&  curTrial < trialsInfo.length) {
-        trialsInfo[curTrial].endTime = endTrialTime;
-        trialsInfo[curTrial].reactTime = endTrialTime - startTrialTime-colorDisk-previewShape-colorDisk-76*20;
-        trialsInfo[curTrial].responseC = 0;
-        repsonse_tmp = trialsInfo[curTrial].responseC;
-        console.log(trialsInfo[curTrial].matchType);
-        console.log(repsonse_tmp);
-         if (trialsInfo[curTrial].matchType == 'same' && repsonse_tmp == 0) {
-            $('#Instruction6').show();
-        }  
-         if (trialsInfo[curTrial].matchType == 'same_swap' && repsonse_tmp == 0) {
-            $('#Instruction6').show();
-        }
-        rt_tmp = trialsInfo[curTrial].reactTime;
-        if (rt_tmp > 4500) {
-            $('#Instruction7').show();
+            // ----------------------------
+            // Main Experiment Trials
+            // ----------------------------
+        if (curTrial >0 &&
+            curTrial < trialsInfo.length) {
+            trialsInfo[curTrial].endTime = endTrialTime;
+            trialsInfo[curTrial].reactTime =
+                endTrialTime - startTrialTime
+                - colorDisk - previewShape - colorDisk - 76*20;
+
+            trialsInfo[curTrial].responseC = 0;
+            repsonse_tmp = trialsInfo[curTrial].responseC;
+            console.log(trialsInfo[curTrial].matchType);
+            console.log(repsonse_tmp);
+            if (
+                trialsInfo[curTrial].matchType == 'same' &&
+                repsonse_tmp == 0
+            ) {
+                $('#Instruction6').show();
+            }
+            if (
+                trialsInfo[curTrial].matchType == 'same_swap' &&
+                repsonse_tmp == 0
+            ) {
+                $('#Instruction6').show();
+            }
+            rt_tmp = trialsInfo[curTrial].reactTime;
+
+            if (rt_tmp > 4500) {
+                $('#Instruction7').show();
+            }
         }
     }
 }
-}    
-// console.log(trialsInfo);       
+
 }, false);
 
-// trialsInfo[0].responseC = 2;
 
-//window.addEventListener ('keydown', function(e){
-  //  if (e.key === "Enter" || e.which == 13){
-    //          continueInstruction1();
-      //     } 
-        //}, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//         if (trainingTrial == 0 ) {
-//               showTrials_training_0();
-//            } 
-//        }
-//         }, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//         if (curTrial == 0 ) {
-//               showTrials_training_0();
-//            } 
-//        }
-//         }, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//         if (trainingTrial <= trialsInfo_training.length-1 && trainingTrial > 0 ) {
-//               showTrials_training();
-//            } 
-//        }
-//         }, false) ;
-
-// window.addEventListener ('keydown', function(e){
-//     if (e.key === "Enter" || e.which == 13){
-//       if (curTrial <= trialsInfo.length - 1 && curTrial>0) {
-//               showTrials_exp();
-//            } 
-//        }
-//         }, false) ;
-
-
-// save json file to local device
+// ---------------------------------------
+// Save Data to Local Device
+// ---------------------------------------
+// Converts the trial data to JSON format and downloads it locally.
 function doneExperiment() {
     JSONObj = JSON.stringify(window.frame);
-    download(JSONObj, "test_data.json", "json"); 
+    download(JSONObj, "test_data.json", "json");
 };
-/* wait for clicks */
+
+
+// ---------------------------------------
+// Button Event Bindings
+// ---------------------------------------
+// These connect the HTML interface buttons to the corresponding functions.
 $('#continueInstructionButton1').click(continueInstruction1);
 $('#startTrainingButton').click(showTrials_training_0);
 $('#nextTrainingTrialButton').click(showTrials_training);
 $('#startExpButton').click(showTrials_exp_0);
 $('#nextTrialButton').click(showTrials_exp);
 
-// $('#submitButton').attr("onclick", "doneExperiment()");
-// $('#submitButton').attr("onclick", "postData()");
-
-// this script is written by Qihan Wu on 10/11/2022 for experiments investigating what dominates object correspondece
 </script>
 
