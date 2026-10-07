@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Object Experiment</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="https://timbrady.org/turk/TimTurkTools.js"></script>
+</head>
+<body>
+<p id="title"><strong>Object Experiment</strong></p>   
+
+<span id="Instruction1">
+        <p id="intruction1.0">Welcome! Thank you for participating in our study.</p>
+        <p id="intruction1.1"><u>Important,</u> before you begin: </p>
+        <p id="intruction1.2">Please do this experiment on a <b>laptop</b> or <b>desktop computer</b>. If you are viewing this experiment on a phone or a tablet, please close the window and return later with non-mobile device.</p>
+        <p id="instruction1.3"> Second: <b>please maximize the window for this browser and tab before you continue.</b></p>
+        <p id="instruction1.4"> Click 'continue' once you have maximized the window and you are ready to  move on.</p>
+</span>
+
+<div id="Instruction2">
+    <p id="intruction2.0">In this experiment every trial will be more or less the same: 2 colored disks will be presented to the left and right of a central occluder. Novel shapes will appeare in the two disks. The shapes then will be removed, and the empty colored disks will move behind the occluder. The occluder will then be removed to display the two colored disks containing two shapes. If both shapes are the same as in the preview, press 1 to indicate they are the same. If one is replaced by a new shape, press 0 to indicate there is a new shape. The positions of the shapes and the colors of the disks in which they appear are entirely <b>irrelevant</b> to the task, so you should base your decision solely on the shapes themselves.</p>
+        <p>Click 'start training' to see the training trials.</p>
+</div>
+
+<div id="Instruction3">
+    <p id="intsruction3.0">Training is now complete. The experiment is about to start. The experiemnt will take around 40 mintues. </p>
+    <p id="instruction3.1">Click 'start experiment' when you are ready. Remember, your job is to press 1 or 0 on the keyboard as fast as possible to indicate whether the two shapes are the same as you saw before the disks move, or there is a new shape.</p>
+</div>
+
+<div id="Instruction4">
+    <p id="Intsruction4.0">You can take a break now. If you are ready to continue the experiments press 'Space'. </p>
+</div>
+<div id="Instruction5">
+    <p id="Intsruction5.0">The experiment is finished. Please press 'd' to submit your data, and enter your name. Thank you.</p>
+</div>
+
+<div id="Instruction6">
+    <p id="Intsruction6.0">The response on your last trial was incorrect. Remember, if both shapes are the same as in the preview, press 1, if they are different press 0. Please pay attention. Thank you.</p>
+</div>
+
+<div id="Instruction7">
+    <p id="Intsruction7.0">The reaction time on the last trial was longer then 4.5 seconds. Please be faster. Thank you.</p>
+</div>
+
+
+<button id="continueInstructionButton1">continue</button>
+<button id="startTrainingButton">start training</button>
+<button id="nextTrainingTrialButton">next</button>
+<button id="startExpButton">start experiment</button>
+<button id="nextTrialButton">next</button>
+<button id="submitButton">submit</button>
+
+<div><canvas id="canvas_L" width="800" height="500"></canvas></div>
+<div><canvas id="canvas_fixation" width="10" height="10"></canvas></div>
+<img id="occluder", width="200",height="300", src="occluder large.png">
+
+<img id="shape_0", width="55",height="55", src="shape_0.png">
+<img id="shape_1", width="55",height="55", src="shape_1.png">
+<img id="shape_2", width="55",height="55", src="shape_2.png">
+<img id="shape_3", width="55",height="55", src="shape_3.png">
+<img id="shape_4", width="55",height="55", src="shape_4.png"> 
+
+
+</body>
+</html>
+
+<style type="text/css">
+body {
+        font-family: Helvetica;
+        font-size: 15pt;
+        background-color: white;
+        color:black;
+    } 
+    #title {
+        font-size:18pt;
+        text-align:center;
+        margin:0 auto;
+    }
+    #Instruction1 {
+        display:table;
+        max-width: 50%; 
+        margin: 0 auto; 
+        margin-top: 0px; 
+    }
+    #continueInstructionButton1 {
+        display: table;
+        position: absolute;
+        left: 50%;
+        bottom: 20%;
+        transform: translate(-50%, -50%);   
+    }
+    #startTrainingButton {
+        display: none;
+        position: absolute;
+        left: 50%;
+        bottom: 20%;
+        transform: translate(-50%, -50%); 
+    }
+    #Instruction2 {
+        display:none;
+        max-width: 50%; 
+        margin: 0 auto; 
+        margin-top: 0px; 
+        text-align:left;
+    }
+    #Instruction3 {
+        display:none;
+        max-width: 50%; 
+        text-align:center;
+        margin: 0 auto; 
+        margin-top: 10%; 
+    }
+    #Instruction4 {
+        font-size: 15pt;
+        display:none;
+        position:absolute;
+        max-width: 80%; 
+        text-align:center;
+        margin: 0 auto;
+        top: 60%;
+        left: 20%;
+        right: 20%;
+    }
+    #Instruction5 {
+        font-size: 40pt;
+        display:none;
+        max-width: 50%; 
+        margin: 0 auto; 
+        margin-top: 10px; 
+        text-align:center; 
+    }
+    #Instruction6 {
+        font-size: 20pt;
+        display:none;
+        max-width: 50%; 
+        margin: 0 auto; 
+        margin-top: 20px; 
+        text-align:center; 
+    }
+    #Instruction7 {
+        font-size: 20pt;
+        display:none;
+        max-width: 50%; 
+        margin: 0 auto; 
+        margin-top: 100px; 
+        text-align:center; 
+    }
+    #canvas_L {
+        display: none;
+        background-color: gray;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); 
+    }
+    #canvas_fixation {
+        display: none;
+        background-color: black;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); 
+    }
+    #startExpButton {
+        display: none;
+        position: absolute;
+        left: 50%;
+        bottom: 50%;
+        transform: translate(-50%, -50%); 
+    }
+    #nextTrainingTrialButton {
+        display: none;
+        position: absolute;
+        left: 50%;
+        top: 75%;
+        transform: translate(-50%, -50%);         
+    }
+    #nextTrialButton {
+        display: none;
+        position: absolute;
+        left: 50%;
+        top: 75%;
+        transform: translate(-50%, -50%);         
+    }
+    #submitButton {
+        display: none;
+        position: absolute;
+        left: 50%;
+        bottom: 50%;
+        transform: translate(-50%, -50%);         
+    }
+    #occluder {
+        display: none;
+        left: 50%;
+        top: 50%;
+    }
+    #shape_0 {
+        display: none;
+    }
+    #shape_1 {
+        display: none;
+    }
+    #shape_2 {
+        display: none;
+    }
+    #shape_3 {
+        display: none;
+    }
+    #shape_4 {
+        display: none;
+    }
+    #gif {
+        display: none;
+    }
+</style>
+
+<script>
+
+
+//------Set up canvas begin---------
+// Get the main canvas element used to display the experiment.
+var canvas_L = document.getElementById('canvas_L');
+// Get the 2D drawing context so shapes, disks, and occluders can be drawn.
+var ctx_L = canvas_L.getContext('2d');
+// Store canvas dimensions for repeated use throughout the experiment.
+var canvasWidth = canvas_L.width;
+var canvasHeight = canvas_L.height;
+
+// Store screen dimensions.
+let screenWidth = screen.width;
+let screeHeight = screen.height;
+
+// ======================== GENERATE 9-DIGIT SUBJECT ID ======================= //
+// Generate a nine-digit participant identifier, including leading zeros.
+function generateRandom9DigitID() {
+
+    const n = Math.floor(Math.random() * 1e9);
+    return String(n).padStart(9, '0');
+}
+
+// Request fullscreen display for the page using the supported browser method.
+function goFullscreen() {
+    const elem = document.documentElement; // the whole page
+
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {  // Safari
+        elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {     // Firefox
+        elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {      // IE/Edge
+        elem.msRequestFullscreen();
+    }
+}
+
+// ======================== GET BROWSER ======================= //
+// Get browser (credit to Nimesh and other users of StackOverflow)
+function getBrowser() {
+      if ((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf("OPR")) != -1) {
+        return "Opera";
+    } else if (navigator.userAgent.indexOf("Chrome") != -1) {
+        return "Chrome";
+    } else if (navigator.userAgent.indexOf("Safari") != -1) {
+        return "Safari";
+    } else if (navigator.userAgent.indexOf("Firefox") != -1) {
+        return "Firefox";
+    } else if ((navigator.userAgent.indexOf("MSIE") != -1) || (!!document.documentMode == true)) {
+        // If IE > 10
+        return "IE";
+    } else {
+        return "Unknown";
+    }
+}
+
+
+// ======================== Generate ID ======================= //
+// Read workerId from the URL or create a random identifier if it is absent.
+function getSubjectID() {
+    var paramstr = window.location.search.substring(1);
+    var parampairs = paramstr.split("&");
+    for (var i = 0; i < parampairs.length; i++) {
+        var pair = parampairs[i].split("=");
+        if (pair[0] === "workerId" && pair[1]) {
+            return pair[1]; // use MTurk workerId if present
+        }
+    }
+    // Fallback: generate a 9-digit numeric ID for local use
+    return generateRandom9DigitID();
+}
+
+// Global subject ID for this participant/session
+window.subjectID = getSubjectID();
+
+// ======================== POST DATA TO SERVER ======================= //
+// Send the filename and serialized data to the write_data.php endpoint.
+function saveData(name, data){
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'write_data.php'); // 'write_data.php' is the path to the php file described above.
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({filename: name, filedata: data}));
+}
+
+// Convert the main trial array to CSV and send it to the server.
+function postData() {
+
+    var dataString = convertJsonToCsv(window.frame);
+    saveData(window.subjectID,dataString);
+
+    alert("Thank you! You will be redirected to the SONA website.");
+        redirect();
+    $("#instructions").show();  
+    $("#instructions").text("Please don't close yet!");  
+  }  
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 's' || event.keyCode === 83) { // 83 is the keyCode for 's'
+        postData();
+    }
+});
+
+// ======================== save DATA TO loacl ======================= //
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'd' || event.keyCode === 68) { // 68 is 'd'
+        let csvStr = convertJsonToCsv(trialsInfo);
+        const filename = 'change_pre_post' + window.subjectID + '.csv';
+        download(csvStr, filename, 'text/csv');
+    }
+});
+
+// Download supplied data locally through a Blob and temporary link.
+function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement('a'),
+            url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+}
+
+// Use the first row to define column names, then serialize each trial row.
+function convertJsonToCsv(json) {
+    const keys = Object.keys(json[0]);
+    const csvRows = [];
+    // headers
+    csvRows.push(keys.join(','));
+    // data
+    for (const row of json) {
+        csvRows.push(keys.map(key => row[key]).join(","));
+    }
+    return csvRows.join('\n');
+}
+
+//--------------------------------------
+//--------------------------------------
+//---------Experimental setup begins----
+//--------------------------------------
+//--------------------------------------
+
+//--------------------------------------
+//---------SET PARAMETERS BEGIN---------
+//--------------------------------------
+
+// Controls whether participant responses should currently be accepted.
+var responseAcceptable = false;
+// Approximate refresh interval for 60 Hz presentation.
+var freshRate = 1000/60;
+
+// Variables for storing the start and end timestamps of each trial.
+var startTrialTime;
+var endTrialTime;
+
+// ---------------------------------------
+// Trial generation variables
+// ---------------------------------------
+// These temporary variables are filled on each iteration of trial generation
+// and then written into the trial objects that make up the experiment design.
+
+var shape_A_preview_tmp;
+var shape_A_test_tmp;
+var shape_B_preview_tmp;
+var shape_B_test_tmp;
+
+// Final vertical offsets for disks A and B behind the occluder.
+var vertical_tmp_A;
+var vertical_tmp_B;
+// Possible final vertical positions of the two disks when they stop behind the occluder.
+var vertical_tmp_array = [-50,+50];
+
+//////////////////////////////////////
+//////////////////////////////////////
+/////////////Trial types//////////////
+//////////////////////////////////////
+//////////////////////////////////////
+
+// ---------------------------------------
+// Feature combinations
+// ---------------------------------------
+// Codes 1 and 2 specify changing spatial frequency and rotating orientation.
+// Codes 3 and 4 specify the two static colors. Each pair gives pre/post codes.
+
+const PAIR12 = [[1,1],[1,2],[2,1],[2,2]];
+const PAIR34 = [[3,3],[3,4],[4,3],[4,4]];
+
+// Return every pairing of one entry from each of the two arrays.
+function cartesian(a, b) {
+  const out = [];
+  for (const x of a) for (const y of b) out.push([x, y]);
+  return out;
+}
+
+// Combine the four dynamic pre/post pairs with the four static pre/post pairs.
+// Assign the dynamic pair to A and the static pair to B, then reverse sides.
+// This produces 32 feature combinations.
+function generateAll32Combos() {
+  const base = cartesian(PAIR12, PAIR34).map(([A, B]) => ({
+    A_pre: A[0], A_post: A[1],
+    B_pre: B[0], B_post: B[1]
+  }));
+  const swapped = cartesian(PAIR34, PAIR12).map(([A, B]) => ({
+    A_pre: A[0], A_post: A[1],
+    B_pre: B[0], B_post: B[1]
+  }));
+  return base.concat(swapped);
+}
+
+// Generate the feature-combination list, which is shuffled once per run.
+const COMBOS32 = generateAll32Combos();
+
+// Randomizes the order of elements in an array in place.
+function shuffle(a){for(let j,x,i=a.length;i;j=Math.floor(Math.random()*i),x=a[--i],a[i]=a[j],a[j]=x);return a;}
+shuffle(COMBOS32);
+
+// Map feature codes to the drawing-mode strings stored in trial rows.
+const MODE_MAP = {
+  1: { type: 'freq' },
+  2: { type: 'orient' },
+  3: { type: 'color_static', name: 'colorA' }, // static color A
+  4: { type: 'color_static', name: 'colorB' }  // static color B
+};
+
+// Number of repetitions per condition block: 32.
+  var nRepetitions = 32
+
+  // configure once per run
+// Flags specify whether switching between the two codes counts as a change.
+// With both flags false, each code switch contributes to feature inconsistency.
+const equal12 = false; // true means 1==2
+const equal34 = false; // true means 3==4
+
+// Count disks whose feature codes change between preview and test.
+// Return consistent, inconsistent_1, or inconsistent_2 for zero, one, or two changes.
+function labelFeaturalConsistency(combo) {
+  const changed = (x, y) => x !== y;
+  const in12    = (x) => x === 1 || x === 2; // else it's in {3,4}
+
+  const A_relevant = changed(combo.A_pre, combo.A_post) && (in12(combo.A_pre) ? !equal12 : !equal34);
+  const B_relevant = changed(combo.B_pre, combo.B_post) && (in12(combo.B_pre) ? !equal12 : !equal34);
+
+  const n = (A_relevant ? 1 : 0) + (B_relevant ? 1 : 0);
+  return n === 0 ? "consistent" : (n === 1 ? "inconsistent_1" : "inconsistent_2");
+}
+
+// ---------------------------------------
+// Trial generator
+// ---------------------------------------
+// This function builds a full list of trial objects.
+// nRepetitions determines how many trials of each condition to generate.
+// trialsInfo is the array that the new trial objects are pushed into.
+// Each of the four blocks generates 2 * nRepetitions trials and cycles through
+// COMBOS32. The completed trial list is shuffled before presentation.
+
+function trialGenerator(nRepetitions,trialsInfo) { 
+
+// ---------------------------------------
+// Condition 1: "same"
+// ---------------------------------------
+// Both previewed shapes reappear unchanged at test.
+// Generated at 2 * nRepetitions.
+
+    for (var j1 = 0; j1 < 2*nRepetitions; j1++) { 
+
+        var arr = [];
+        while(arr.length < 2) {
+            var r = Math.floor(Math.random() * 5);
+            if(arr.indexOf(r) === -1) arr.push(r);
+        }
+        shape_A_preview_tmp = arr[0];
+        shape_A_test_tmp = shape_A_preview_tmp;
+        shape_B_preview_tmp = arr[1];
+        shape_B_test_tmp = shape_B_preview_tmp;   
+
+        var arr_vertical = [];
+        while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+        }
+        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        const combo = COMBOS32[j1 % 32];   // takes j-th combo, loops every 32 trials
+
+        const A_mode_pre_type  = MODE_MAP[combo.A_pre].type;
+        const A_mode_post_type = MODE_MAP[combo.A_post].type;
+        const B_mode_pre_type  = MODE_MAP[combo.B_pre].type;
+        const B_mode_post_type = MODE_MAP[combo.B_post].type;
+
+        const FeaturalConsistencyType = labelFeaturalConsistency(combo);
+
+        trialsInfo.push({
+            "FeaturalConsistencyType":FeaturalConsistencyType,
+            "matchType":"same",
+            "shape_A_pre_ind":shape_A_preview_tmp,
+            "shape_A_test_ind":shape_A_test_tmp,
+            "shape_B_pre_ind":shape_B_preview_tmp,
+            "shape_B_test_ind":shape_B_test_tmp,  
+            "ball_A_vertical":vertical_tmp_A,
+            "ball_B_vertical":vertical_tmp_B,
+
+            // types (strings) that renderByMode expects
+            "ball_A_mode_pre":  A_mode_pre_type,
+            "ball_B_mode_pre":  B_mode_pre_type,
+            "ball_A_mode_post": A_mode_post_type,
+            "ball_B_mode_post": B_mode_post_type,
+
+            // raw digits so we know 3 vs 4 for static color
+            "ball_A_mode_pre_code":  combo.A_pre,
+            "ball_B_mode_pre_code":  combo.B_pre,
+            "ball_A_mode_post_code": combo.A_post,
+            "ball_B_mode_post_code": combo.B_post,
+
+            "responseC": "null",
+            "browser": getBrowser(),
+            "subjectID": window.subjectID,
+            "startTime": "null",
+            "endTime": "null",
+            "reactTime":"null",
+        });                  
+    }
+
+// ---------------------------------------
+// Condition 2: "new"
+// ---------------------------------------
+// Shape A stays the same, shape B is replaced by a new shape.
+// Generated at 2 * nRepetitions.
+
+    for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
+
+        var arr = [];
+        while(arr.length < 3) {
+            var r = Math.floor(Math.random() * 5);
+            if(arr.indexOf(r) === -1) arr.push(r);
+        }
+        shape_A_preview_tmp = arr[0];
+        shape_A_test_tmp = shape_A_preview_tmp;
+        shape_B_preview_tmp = arr[1];
+        shape_B_test_tmp = arr[2];   
+
+        var arr_vertical = [];
+        while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+        }
+        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        const combo = COMBOS32[j1 % 32];   // takes j-th combo, loops every 32 trials
+
+        const A_mode_pre_type  = MODE_MAP[combo.A_pre].type;
+        const A_mode_post_type = MODE_MAP[combo.A_post].type;
+        const B_mode_pre_type  = MODE_MAP[combo.B_pre].type;
+        const B_mode_post_type = MODE_MAP[combo.B_post].type;
+
+        const FeaturalConsistencyType = labelFeaturalConsistency(combo);
+
+        trialsInfo.push({
+            "FeaturalConsistencyType":FeaturalConsistencyType,
+            "matchType":"new",
+            "shape_A_pre_ind":shape_A_preview_tmp,
+            "shape_A_test_ind":shape_A_test_tmp,
+            "shape_B_pre_ind":shape_B_preview_tmp,
+            "shape_B_test_ind":shape_B_test_tmp,
+            "ball_A_vertical":vertical_tmp_A,
+            "ball_B_vertical":vertical_tmp_B,
+
+            // types (strings) that renderByMode expects
+            "ball_A_mode_pre":  A_mode_pre_type,
+            "ball_B_mode_pre":  B_mode_pre_type,
+            "ball_A_mode_post": A_mode_post_type,
+            "ball_B_mode_post": B_mode_post_type,
+
+            // raw digits so we know 3 vs 4 for static color
+            "ball_A_mode_pre_code":  combo.A_pre,
+            "ball_B_mode_pre_code":  combo.B_pre,
+            "ball_A_mode_post_code": combo.A_post,
+            "ball_B_mode_post_code": combo.B_post,
+
+            "responseC": "null",
+            "browser": getBrowser(),
+            "subjectID": window.subjectID,
+            "startTime": "null",
+            "endTime": "null",
+            "reactTime":"null",
+        });
+    }
+
+// ---------------------------------------
+// Condition 3: "new"
+// ---------------------------------------
+// Shape B stays the same, shape A is replaced by a new shape.
+// Generated at 2 * nRepetitions.
+
+    for (var j1 = 0; j1 < 2*nRepetitions; j1++) { //shape B stays the same
+
+        var arr = [];
+        while(arr.length < 3) {
+            var r = Math.floor(Math.random() * 5);
+            if(arr.indexOf(r) === -1) arr.push(r);
+        }
+        shape_A_preview_tmp = arr[0];
+        shape_A_test_tmp = arr[1];
+        shape_B_preview_tmp = arr[2];
+        shape_B_test_tmp = shape_B_preview_tmp;
+
+        var arr_vertical = [];
+        while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+        }
+        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        const combo = COMBOS32[j1 % 32];   // takes j-th combo, loops every 32 trials
+
+        const A_mode_pre_type  = MODE_MAP[combo.A_pre].type;
+        const A_mode_post_type = MODE_MAP[combo.A_post].type;
+        const B_mode_pre_type  = MODE_MAP[combo.B_pre].type;
+        const B_mode_post_type = MODE_MAP[combo.B_post].type;
+
+        const FeaturalConsistencyType = labelFeaturalConsistency(combo);
+
+        trialsInfo.push({
+            "FeaturalConsistencyType":FeaturalConsistencyType,
+            "matchType":"new",
+            "shape_A_pre_ind":shape_A_preview_tmp,
+            "shape_A_test_ind":shape_A_test_tmp,
+            "shape_B_pre_ind":shape_B_preview_tmp,
+            "shape_B_test_ind":shape_B_test_tmp,
+            "ball_A_vertical":vertical_tmp_A,
+            "ball_B_vertical":vertical_tmp_B,
+
+            // types (strings) that renderByMode expects
+            "ball_A_mode_pre":  A_mode_pre_type,
+            "ball_B_mode_pre":  B_mode_pre_type,
+            "ball_A_mode_post": A_mode_post_type,
+            "ball_B_mode_post": B_mode_post_type,
+
+            // raw digits so we know 3 vs 4 for static color
+            "ball_A_mode_pre_code":  combo.A_pre,
+            "ball_B_mode_pre_code":  combo.B_pre,
+            "ball_A_mode_post_code": combo.A_post,
+            "ball_B_mode_post_code": combo.B_post,
+
+            "responseC": "null",
+            "browser": getBrowser(),
+            "subjectID": window.subjectID,
+            "startTime": "null",
+            "endTime": "null",
+            "reactTime":"null",
+        });
+    }
+
+// ---------------------------------------
+// Condition 4: "same_swap"
+// ---------------------------------------
+// The same two shapes reappear, but swapped between A and B.
+// Generated at 2 * nRepetitions.
+
+    for (var j1 = 0; j1 < 2*nRepetitions; j1++) {
+
+        var arr = [];
+        while(arr.length < 2) {
+            var r = Math.floor(Math.random() * 5);
+            if(arr.indexOf(r) === -1) arr.push(r);
+        }
+        shape_A_preview_tmp = arr[0];
+        shape_B_preview_tmp = arr[1];
+        shape_A_test_tmp = shape_B_preview_tmp;
+        shape_B_test_tmp = shape_A_preview_tmp;
+
+        var arr_vertical = [];
+        while(arr_vertical.length < 2) {
+        var r = Math.floor(Math.random() * 2);
+        if(arr_vertical.indexOf(r) === -1) arr_vertical.push(r);
+        }
+        vertical_tmp_A = vertical_tmp_array[arr_vertical[0]];
+        vertical_tmp_B = vertical_tmp_array[arr_vertical[1]];
+
+        const combo = COMBOS32[j1 % 32];   // takes j-th combo, loops every 32 trials
+
+        const A_mode_pre_type  = MODE_MAP[combo.A_pre].type;
+        const A_mode_post_type = MODE_MAP[combo.A_post].type;
+        const B_mode_pre_type  = MODE_MAP[combo.B_pre].type;
+        const B_mode_post_type = MODE_MAP[combo.B_post].type;
+
+        const FeaturalConsistencyType = labelFeaturalConsistency(combo);
+
+        trialsInfo.push({
+            "FeaturalConsistencyType":FeaturalConsistencyType,
+            "matchType":"same_swap",
+            "shape_A_pre_ind":shape_A_preview_tmp,
+            "shape_A_test_ind":shape_A_test_tmp,
+            "shape_B_pre_ind":shape_B_preview_tmp,
+            "shape_B_test_ind":shape_B_test_tmp,
+            "ball_A_vertical":vertical_tmp_A,
+            "ball_B_vertical":vertical_tmp_B,
+
+            // types (strings) that renderByMode expects
+            "ball_A_mode_pre":  A_mode_pre_type,
+            "ball_B_mode_pre":  B_mode_pre_type,
+            "ball_A_mode_post": A_mode_post_type,
+            "ball_B_mode_post": B_mode_post_type,
+
+            // raw digits so we know 3 vs 4 for static color
+            "ball_A_mode_pre_code":  combo.A_pre,
+            "ball_B_mode_pre_code":  combo.B_pre,
+            "ball_A_mode_post_code": combo.A_post,
+            "ball_B_mode_post_code": combo.B_post,
+
+            "responseC": "null",
+            "browser": getBrowser(),
+            "subjectID": window.subjectID,
+            "startTime": "null",
+            "endTime": "null",
+            "reactTime":"null",
+        });
+    }
+    trialsInfo = shuffle(trialsInfo);
+    return trialsInfo;
+}
+
+// Array that will hold all main experimental trials: 256 trials in total.
+var trialsInfo = [];
+
+// Additional random identifier; trial rows use window.subjectID.
+var useSubjectID = Math.floor(Math.random() * 10000000);
+
+// Generate the full main experiment trial list.
+var frame = trialGenerator(nRepetitions,trialsInfo);
+// Total number of main experiment trials.
+var nTrials = frame.length;
+
+// Array that will hold all training trials.
+var trialsInfo_training = [];
+// Generate 8 training trials, using the first two shuffled feature combinations
+// in each of the four condition blocks.
+var nRepetitions_training = 1;//2
+var frame_training = trialGenerator(nRepetitions_training,trialsInfo_training);
+var nTrials_training = frame_training.length;
+
+// Save detected browser type and the participant identifier.
+var browser = getBrowser();
+var subjectID = getSubjectID();
+
+//---------------------------------------
+//---------------------------------------
+//-----------FUNCTIONS BEGIN-------------
+//---------------------------------------
+//---------------------------------------
+
+//---------------------------------------
+//-----------Generate the balls----------
+//---------------------------------------
+
+// Radius of each disk in pixels.
+var dotRadius = 40; //Radius of each dot in pixels
+var balls = [];
+
+// ---------------------------------------
+// Ball object
+// ---------------------------------------
+// Each disk stores position, radius, and an optional solid color.
+
+function Ball(x, y, size, color = null) {
+  this.x = x;
+  this.y = y;
+  this.size = size;
+  this.color = color; // used for color modes
+}
+
+// Initial coordinates for the left disk A and right disk B.
+var x_0_A, y_0_A, x_0_B, y_0_B;
+
+// ---------------------------------------
+// Create disk A
+// ---------------------------------------
+// Generate the left disk at its starting position and initialize its color
+// when the preview mode is color_static.
+
+function generateNewBalls_A(trial) {
+  x_0_A = canvasWidth/2 - 230;
+  y_0_A = canvasHeight/2;
+
+  const preType = trial.ball_A_mode_pre;
+  const preCode = trial.ball_A_mode_pre_code;
+
+  let color = null;
+  if (preType === 'color_static') {
+    color = colorForStaticCode(preCode, true);
+  }
+  const ball = new Ball(x_0_A, y_0_A, dotRadius, color);
+  return [ball];
+}
+
+// ---------------------------------------
+// Create disk B
+// ---------------------------------------
+// Generate the right disk at its starting position and initialize its color
+// when the preview mode is color_static.
+
+function generateNewBalls_B(trial) {
+  x_0_B = canvasWidth/2 + 230;
+  y_0_B = canvasHeight/2;
+
+  const preType = trial.ball_B_mode_pre;
+  const preCode = trial.ball_B_mode_pre_code;
+
+  let color = null;
+  if (preType === 'color_static') {
+    color = colorForStaticCode(preCode, true);
+  }
+
+  const ball = new Ball(x_0_B, y_0_B, dotRadius, color);
+  balls.push(ball);
+  return balls;
+}
+
+// Return the active training row, or the active main-experiment row after training.
+function currentTrialRow() {
+  if (trainingTrial < trialsInfo_training.length) return trialsInfo_training[trainingTrial];
+  return trialsInfo[curTrial];
+}
+
+// Select disk A's mode for the current phase and call the appropriate drawing method.
+function drawBallA() {
+  const row = currentTrialRow();
+  const modeA = getModeFor('A', row);
+  renderByMode(balls_A[0], modeA, true);
+}
+// Select disk B's mode for the current phase and call the appropriate drawing method.
+function drawBallB() {
+  const row = currentTrialRow();
+  const modeB = getModeFor('B', row);
+  renderByMode(balls_B[0], modeB, false);
+}
+
+//---------------------------------------
+//-------------Generate Features---------
+//---------------------------------------
+
+// Map static-color code 3 to blue and code 4 to red; use gray as a fallback.
+function colorForStaticCode(code, isA /* ball side, not needed here */) {
+  // code is 3 or 4
+  if (code === 3) return 'blue';  // static color A
+  if (code === 4) return 'red';   // static color B
+  return 'gray';
+}
+
+// Shared counter for the spatial-frequency oscillation; advances after each frequency drawing.
+let time = 0;
+
+// ---------------------------------------
+// Ball drawing method: static color
+// ---------------------------------------
+// Clip the fill to the circular disk, draw its stored color, and add a black border.
+
+Ball.prototype.draw_balls_color = function () {
+    ctx_L.save();
+
+    // clip to item shape
+    ctx_L.beginPath();
+    ctx_L.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx_L.clip();
+
+    // fill interior
+    ctx_L.fillStyle = this.color || 'gray';
+    ctx_L.fillRect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
+
+    ctx_L.restore();
+
+    // thin border
+    ctx_L.beginPath();
+    ctx_L.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx_L.lineWidth = 1.5;
+    ctx_L.strokeStyle = 'black';
+    ctx_L.stroke();
+};
+
+// ---------------------------------------
+// Ball drawing method: changing spatial frequency
+// ---------------------------------------
+// Vary stripe width sinusoidally between 2 and 10 pixels, with gaps equal to
+// the stripe width. Draw vertical stripes symmetrically around the disk center
+// and clip them to the circular boundary. Increment time after drawing.
+
+Ball.prototype.draw_balls_frequency = function () {
+
+    ctx_L.save();
+
+        // Clip to circle
+        ctx_L.beginPath();
+        ctx_L.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx_L.clip();
+
+        // Base fill
+        ctx_L.fillStyle = 'gray';
+        ctx_L.fillRect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
+
+        const minStripe = 2;
+        const maxStripe = 10;
+        const rate = 0.05;
+
+        const stripeWidth =
+        Math.sin(time * rate) * (maxStripe - minStripe) / 2 +
+        (maxStripe + minStripe) / 2;
+
+        const gap = stripeWidth;
+        const period = stripeWidth + gap;
+
+        ctx_L.strokeStyle = 'black';
+        ctx_L.lineCap = 'butt';
+
+        // symmetric draw around center
+        let k = 0;
+        while (true) {
+        const xPlus  = this.x + k * period;
+        const xMinus = this.x - k * period;
+
+        if (k > 0 && (xPlus - this.x > this.size + period) && (this.x - xMinus > this.size + period)) break;
+
+        const drawStripe = (xPos) => {
+            ctx_L.beginPath();
+            ctx_L.lineWidth = stripeWidth;
+            ctx_L.moveTo(xPos, this.y - this.size - 2);
+            ctx_L.lineTo(xPos, this.y + this.size + 2);
+            ctx_L.stroke();
+        };
+
+        if (k === 0) {
+            drawStripe(this.x);
+        } else {
+            drawStripe(xPlus);
+            drawStripe(xMinus);
+        }
+
+        k++;
+        }
+
+        ctx_L.restore();
+
+        // thin border
+        ctx_L.beginPath();
+        ctx_L.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx_L.lineWidth = 1.5;
+        ctx_L.strokeStyle = 'black';
+        ctx_L.stroke();
+
+        time += 1;
+};
+
+// Shared orientation angle used to draw the rotating stripe pattern.
+let rotationAngle = 0;
+
+// ---------------------------------------
+// Ball drawing method: changing orientation
+// ---------------------------------------
+// Rotate drawing coordinates around the disk center. Draw 5-pixel stripes
+// and gaps inside a circular clip, then restore the canvas state and draw
+// a black border. Increment rotationAngle by 0.05 radians after drawing.
+
+Ball.prototype.draw_balls_rotate = function () {
+        ctx_L.save();
+
+        // move center & rotate
+        ctx_L.translate(this.x, this.y);
+        ctx_L.rotate(rotationAngle);
+        ctx_L.translate(-this.x, -this.y);
+
+        // clip to circle
+        ctx_L.beginPath();
+        ctx_L.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx_L.clip();
+
+        // base fill
+        ctx_L.fillStyle = 'gray';
+        ctx_L.fillRect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
+
+        // draw stripes
+        const stripeWidth = 5;
+        const gap = stripeWidth;
+        const period = stripeWidth + gap;
+        const half = this.size + period;
+
+        ctx_L.strokeStyle = 'black';
+        ctx_L.lineCap = 'butt';
+
+        const drawStripe = (xPos) => {
+            ctx_L.beginPath();
+            ctx_L.lineWidth = stripeWidth;
+            ctx_L.moveTo(xPos, this.y - half);
+            ctx_L.lineTo(xPos, this.y + half);
+            ctx_L.stroke();
+        };
+
+        // center + symmetric stripes
+        drawStripe(this.x);
+        for (let offset = period; offset <= half + period; offset += period) {
+            drawStripe(this.x + offset);
+            drawStripe(this.x - offset);
+        }
+
+        ctx_L.restore();
+
+        // thin border
+        ctx_L.beginPath();
+        ctx_L.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx_L.lineWidth = 1.5;
+        ctx_L.strokeStyle = 'black';
+        ctx_L.stroke();
+
+        rotationAngle += 0.05;
+};
+
+//---------------------------------------
+//---------------------------------------
+//-----------Encode Motion --------------
+//---------------------------------------
+//---------------------------------------
+
+// ---------------------------------------
+// Motion parameters
+// ---------------------------------------
+// Horizontal displacement per position update.
+
+var velX = 4.5;//4.5
+// var velY = 1.5;
+var edgeX = 100;
+
+// ---------------------------------------
+// Position update for disk A
+// ---------------------------------------
+// Moves the left disk toward the center/occluder.
+// The y-position is adjusted across different x-ranges to create a curved path.
+// Once the disk reaches the center, it is placed at its assigned final vertical offset.
+
+Ball.prototype.updatePosition_A = function() { //define the moving path
+    if (this.x < canvasWidth/2) {
+        this.x = this.x + velX;
+        if (this.x < x_0_A+dotRadius/4) {
+            this.y = this.y+10;
+        }
+        if (x_0_A+dotRadius/4 <= this.x && this.x < x_0_A+dotRadius/2) {
+            this.y = this.y+15;
+        }
+        if (x_0_A+dotRadius/2 <= this.x && this.x < x_0_A+1.5*dotRadius) {
+            this.y = this.y-3;
+        }
+        if (x_0_A+1.5*dotRadius <= this.x && this.x < x_0_A+2*dotRadius) {
+            this.y = this.y;
+        }
+        if (x_0_A+2*dotRadius <= this.x && this.x < x_0_A+3*dotRadius) {
+            this.y = this.y-3;
+        }
+        if (x_0_A+3*dotRadius <= this.x && this.x < x_0_A+3*dotRadius) {
+            this.y = this.y+3;
+        }
+        if (x_0_A+3*dotRadius <= this.x && this.x < canvasWidth/2) {
+            this.y = canvasHeight/2;
+        }
+    } 
+    else {
+        this.x = canvasWidth/2;
+        this.y = canvasHeight/2+vertical_tmp_A;
+    }
+};
+
+// ---------------------------------------
+// Position update for disk B
+// ---------------------------------------
+// Moves the right disk toward the center/occluder.
+// As with disk A, the y-position changes across x-ranges to create the motion path.
+// Once the disk reaches the center, it is placed at its assigned final vertical offset.
+
+Ball.prototype.updatePosition_B = function() {    
+    if (this.x > canvasWidth/2) {
+        this.x = this.x - velX;
+
+        if (this.x > x_0_B-dotRadius/4) {
+            this.y = this.y+10;
+        }
+        if (x_0_B-dotRadius/2 < this.x && this.x <= x_0_B-dotRadius/4) {
+            this.y = this.y+15;
+        }
+        if (x_0_B-1.5*dotRadius < this.x && this.x <= x_0_B-dotRadius/2) {
+            this.y = this.y-3;
+        }
+        if (x_0_B-2*dotRadius < this.x && this.x <= x_0_B-1.5*dotRadius) {
+            this.y = this.y;
+        }
+        if (x_0_B-3*dotRadius < this.x && this.x <= x_0_B-2*dotRadius) {
+            this.y = this.y-3;
+        }
+        if (x_0_B-5*dotRadius < this.x && this.x <= x_0_B-5*dotRadius) {
+            this.y = this.y+3;
+        }
+        if (canvasWidth/2 < this.x && this.x <= x_0_B-5*dotRadius) {
+            this.y = canvasHeight/2;
+        }
+    } 
+    else {
+        this.x = canvasWidth/2;
+        this.y = canvasHeight/2+vertical_tmp_B;
+    }
+};
+
+//---------------------------------------
+//------------Add pre/post logic---------
+//---------------------------------------
+
+// Phase helper: everything before 230 is "pre", after is "post"
+// Use preview modes before count 230 and post-occlusion modes from count 230 onward.
+function currentPhase() {
+  return (refresh_stimuliOnset_test < 230) ? 'pre' : 'post';
+}
+
+// Return the mode string for ball A/B at the current phase
+// Read the selected disk's drawing-mode string for the current phase.
+function getModeFor(ball, trial) {
+  const phase = currentPhase(); // 'pre' | 'post'
+  if (ball === 'A') {
+    return (phase === 'pre') ? trial.ball_A_mode_pre : trial.ball_A_mode_post;
+  } else {
+    return (phase === 'pre') ? trial.ball_B_mode_pre : trial.ball_B_mode_post;
+  }
+}
+
+// Render + (optionally) update color depending on the mode
+// Dispatch to the frequency, orientation, or static-color drawing method.
+// Static-color drawing uses the color stored when the disk was constructed;
+// this function does not reassign it from the post-occlusion color code.
+function renderByMode(ballObj, mode, isA) {
+  switch (mode) {
+    case 'freq':        // spatial frequency stripes
+      ballObj.draw_balls_frequency();
+      break;
+    case 'orient':      // rotating stripes
+      ballObj.draw_balls_rotate();
+      break;
+    case 'color_static':
+      ballObj.draw_balls_color(); // no update
+      break;
+
+    default:
+      // Fallback: just draw as a solid gray dot
+      ballObj.draw_balls_color();
+  }
+}
+
+//---------------------------------------
+// //////////Exp procedures////////////// 
+//---------------------------------------
+
+// Advance from the first instruction screen to the training instructions.
+function continueInstruction1() {
+    $('#Instruction1').hide();
+    $('#continueInstructionButton1').hide();
+    $('#Instruction2').show(); 
+    $('#startTrainingButton').show();
+    goFullscreen()
+}
+var shapeTmp;
+let balls_A = [];
+let balls_B = [];
+var trainingTrial = 0;
+var revealTime = null;  
+
+// ---------------------------------------
+// Start the first training trial
+// ---------------------------------------
+// Present training trial 0 without incrementing the trial counter.
+
+function showTrials_training_0() {
+
+    responseAcceptable = false;
+    revealTime = null;  // <--- reset here
+    $('#title').hide();
+    $('#Instruction2').hide();
+    $('#startTrainingButton').hide();
+
+    const row = currentTrialRow();
+    balls = generateNewBalls_A(row); balls_A = balls; balls = [];
+    balls = generateNewBalls_B(row); balls_B = balls; balls = [];
+
+    startTrialTime = new Date();
+    trialsInfo_training[trainingTrial].startTime= startTrialTime;
+    $('#canvas_L').show(); 
+    animate();
+}
+
+// ---------------------------------------
+// Advance to the next training trial
+// ---------------------------------------
+// Increment trainingTrial, clear feedback, and prepare the next training trial.
+// When training is finished, show the main experiment instructions.
+
+function showTrials_training() {
+    responseAcceptable = false;
+    revealTime = null;  // <--- reset here
+    $('#Instruction4').hide();
+    $('#Instruction6').hide();
+    $('#Instruction7').hide();
+    $('#nextTrainingTrialButton').hide();
+    trainingTrial ++;
+
+    if (trainingTrial <= trialsInfo_training.length-1) {
+
+        const row = currentTrialRow();
+        balls = generateNewBalls_A(row); balls_A = balls; balls = [];
+        balls = generateNewBalls_B(row); balls_B = balls; balls = [];
+        $('#Instruction2').hide();
+        // ctx_L.fillStyle = 'gray';
+        ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
+         startTrialTime = new Date();
+        trialsInfo_training[trainingTrial].startTime= startTrialTime;
+        $('#canvas_L').show();
+        animate(); 
+        } else {
+        $('#Instruction3').show();
+        $('#startExpButton').show();
+    }
+}
+
+var curTrial = 0;
+
+// ---------------------------------------
+// Start the first main experiment trial
+// ---------------------------------------
+// Present main trial 0 without incrementing the trial counter.
+// Reset the test-onset timestamp and record the trial start time.
+
+function showTrials_exp_0() {
+    responseAcceptable = false;
+    revealTime = null;  // <--- reset here
+    $('#title').hide();
+    $('#Instruction3').hide();
+    $('#startExpButton').hide();
+
+    const row = currentTrialRow();
+    balls = generateNewBalls_A(row); balls_A = balls; balls = [];
+    balls = generateNewBalls_B(row); balls_B = balls; balls = [];
+
+    ctx_L.fillStyle = 'gray';
+    ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
+    startTrialTime = new Date();
+    trialsInfo[curTrial].startTime= startTrialTime;
+    $('#canvas_L').show();
+    animate();  
+}
+
+// ---------------------------------------
+// Advance to the next main experiment trial
+// ---------------------------------------
+// Increment the trial counter and prepare the next trial, or show completion
+// instructions after the last trial.
+
+function showTrials_exp() {
+    responseAcceptable = false;
+    revealTime = null;  // <--- reset here
+    curTrial++;
+    $('#Instruction4').hide();
+    $('#Instruction6').hide();
+    $('#Instruction7').hide();
+    $('#nextTrialButton').hide();
+
+    if (curTrial <= trialsInfo.length - 1) {
+
+        const row = currentTrialRow();
+        balls = generateNewBalls_A(row); balls_A = balls; balls = [];
+        balls = generateNewBalls_B(row); balls_B = balls; balls = [];
+
+        ctx_L.fillStyle = 'gray';
+        ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);  
+        startTrialTime = new Date();
+        trialsInfo[curTrial].startTime= startTrialTime;
+        $('#canvas_L').show(); 
+        animate();  
+    } else {
+        $('#Instruction5').show();
+        $('#submitButton').show();
+    }
+}
+
+// ---------------------------------------
+// Timing and stimulus presentation variables
+// ---------------------------------------
+// Legacy timeout handles and indices for the preview and test shapes.
+
+var myTimeout10;
+var myTimeout11;
+var myTimeout12;
+var shapeInd_A_pre;
+var shapeInd_A_test;
+var shapeInd_B_pre;
+var shapeInd_B_test;
+
+// Counter tracking the number of animation updates since trial onset.
+var refresh_stimuliOnset_test = 0;
+
+// Handles for animation timing.
+var myTimeout;
+var myReq;
+var startResponseTiming = false;
+// Parameters controlling the movement of the occluder.
+var occluder_velX = 0;
+var occluder_velY = 40;//40
+var occluder_posX = 0;
+var occluder_posY = 0;
+
+// ---------------------------------------
+// Animation Function
+// ---------------------------------------
+// Load the active trial's shape indices and final disk positions.
+// Draw the preview, move the disks behind the occluder, reveal them, and
+// present the test shapes. Drawing modes depend on the current phase.
+
+function animate() { // make the balls and the shapes move together, and occluder when spatiotemporal feature is inconsistent
+    myTimeout = setTimeout (function() {     
+     ctx_L.fillStyle = 'gray';
+    ctx_L.clearRect(0,0,canvas_L.width, canvas_L.height);
+
+    if (trainingTrial < trialsInfo_training.length) {
+        vertical_tmp_A = trialsInfo_training[trainingTrial].ball_A_vertical;
+        vertical_tmp_B = trialsInfo_training[trainingTrial].ball_B_vertical;
+
+        shapeInd_A_pre = trialsInfo_training[trainingTrial].shape_A_pre_ind;
+        shapeInd_B_pre = trialsInfo_training[trainingTrial].shape_B_pre_ind; 
+    }
+    if (trainingTrial == trialsInfo_training.length && curTrial < trialsInfo.length) {
+        vertical_tmp_A = trialsInfo[curTrial].ball_A_vertical;
+        vertical_tmp_B = trialsInfo[curTrial].ball_B_vertical;
+
+        shapeInd_A_pre = trialsInfo[curTrial].shape_A_pre_ind;
+        shapeInd_B_pre = trialsInfo[curTrial].shape_B_pre_ind;
+    }
+
+    refresh_stimuliOnset_test ++;
+
+    if (refresh_stimuliOnset_test < 30) {// fresh rate at the end is 16.6 ms. 76 times 16 is 1200 ms, that is what this keeps count of, so it is a timer. This period is just showing the balls and shape. 
+        ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
+
+        drawBallA();
+        drawBallB();
+
+    }
+
+    if (refresh_stimuliOnset_test >= 30 && refresh_stimuliOnset_test < 106) {// fresh rate at the end is 16.6 ms. 76 times 16 is 1200 ms, that is what this keeps count of, so it is a timer. This period is just showing the balls and shape. 
+        ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
+
+        drawBallA();
+        drawBallB();
+
+        if (shapeInd_A_pre == 0) {
+            shapeTmp = shape_0
+        } else if (shapeInd_A_pre == 1) {
+            shapeTmp = shape_1
+        } else if (shapeInd_A_pre == 2) {
+            shapeTmp = shape_2
+        } else if (shapeInd_A_pre == 3) {
+            shapeTmp = shape_3
+        } else if (shapeInd_A_pre == 4) {
+            shapeTmp = shape_4
+        }
+        ctx_L.drawImage(shapeTmp, balls_A[0].x-27, balls_A[0].y-27)
+
+        if (shapeInd_B_pre == 0) {
+            shapeTmp = shape_0
+        } else if (shapeInd_B_pre == 1) {
+            shapeTmp = shape_1
+        } else if (shapeInd_B_pre == 2) {
+            shapeTmp = shape_2
+        } else if (shapeInd_B_pre == 3) {
+            shapeTmp = shape_3
+        } else if (shapeInd_B_pre == 4) {
+            shapeTmp = shape_4
+        }
+        ctx_L.drawImage(shapeTmp, balls_B[0].x-27, balls_B[0].y-27)
+    }
+
+    if (refresh_stimuliOnset_test >= 106 && refresh_stimuliOnset_test < 206) {// this is the movement part. 
+
+        drawBallA();
+        drawBallB();
+
+        balls_A[0].updatePosition_A();
+        balls_B[0].updatePosition_B();
+
+        ctx_L.drawImage(occluder,canvasWidth/2-100,canvasHeight/2-150);
+    }
+
+    if (refresh_stimuliOnset_test >= 206 && refresh_stimuliOnset_test <= 230) {// this is the occlusion part
+
+        drawBallA();
+        drawBallB();
+
+        balls_A[0].updatePosition_A();
+        balls_B[0].updatePosition_B();
+
+        ctx_L.drawImage(occluder,canvasWidth/2-100-occluder_posX,canvasHeight/2-150-occluder_posY);
+    }  
+
+    if (refresh_stimuliOnset_test >= 230 && refresh_stimuliOnset_test <= 260) {//this is the reveal part without shapes
+
+        if (trainingTrial <= trialsInfo_training.length-1) {
+            shapeInd_A_test = trialsInfo_training[trainingTrial].shape_A_test_ind;
+            shapeInd_B_test = trialsInfo_training[trainingTrial].shape_B_test_ind;
+        }
+
+        if (trainingTrial == trialsInfo_training.length && curTrial>=0) {
+            shapeInd_A_test = trialsInfo[curTrial].shape_A_test_ind;
+            shapeInd_B_test = trialsInfo[curTrial].shape_B_test_ind;
+        }
+
+        drawBallA();
+        drawBallB();
+
+        balls_A[0].updatePosition_A();
+        balls_B[0].updatePosition_B();
+
+        ctx_L.drawImage(occluder,canvasWidth/2-100-occluder_posX,canvasHeight/2-150-occluder_posY);
+        occluder_posY = occluder_posY + occluder_velY;
+    }
+
+    if (refresh_stimuliOnset_test > 260) {//this is the reveal part
+
+        if (revealTime === null) {
+        revealTime = new Date();
+        }
+
+        if (trainingTrial <= trialsInfo_training.length-1) {
+            shapeInd_A_test = trialsInfo_training[trainingTrial].shape_A_test_ind;
+            shapeInd_B_test = trialsInfo_training[trainingTrial].shape_B_test_ind;
+        }
+
+        if (trainingTrial == trialsInfo_training.length && curTrial>=0) {
+            shapeInd_A_test = trialsInfo[curTrial].shape_A_test_ind;
+            shapeInd_B_test = trialsInfo[curTrial].shape_B_test_ind;
+        }
+
+        drawBallA();
+        drawBallB();
+        balls_A[0].updatePosition_A();
+        balls_B[0].updatePosition_B();
+
+        if (shapeInd_A_test == 0) {
+            shapeTmp = shape_0
+        } else if (shapeInd_A_test == 1) {
+            shapeTmp = shape_1
+        } else if (shapeInd_A_test == 2) {
+            shapeTmp = shape_2
+        } else if (shapeInd_A_test == 3) {
+            shapeTmp = shape_3
+        } else if (shapeInd_A_test == 4) {
+            shapeTmp = shape_4
+        }
+        ctx_L.drawImage(shapeTmp, balls_A[0].x-27, balls_A[0].y-27);
+
+        if (shapeInd_B_test == 0) {
+            shapeTmp = shape_0
+        } else if (shapeInd_B_test == 1) {
+            shapeTmp = shape_1
+        } else if (shapeInd_B_test == 2) {
+            shapeTmp = shape_2
+        } else if (shapeInd_B_test == 3) {
+            shapeTmp = shape_3
+        } else if (shapeInd_B_test == 4) {
+            shapeTmp = shape_4
+        }
+        ctx_L.drawImage(shapeTmp, balls_B[0].x-27, balls_B[0].y-27);
+
+        responseAcceptable = true; // only allow response when the occlude is removed/equivalent time in no occluder condition
+    }
+
+        myReq = requestAnimationFrame(animate);
+    }, freshRate)
+};
+
+////////////////////////////////
+////////////////////////////////
+////Record keyboard response///
+///////////////////////////////
+////////////////////////////////
+
+// ---------------------------------------
+// Keyboard Response Listener
+// ---------------------------------------
+// After a response, SPACE advances to the next training or main trial.
+// During the test, 1 means both preview shapes remain and 0 means a shape is new.
+// Stop animation after the first accepted response and record the active trial
+// row. Reaction time is measured from revealTime, set at test-shape onset.
+// Show accuracy feedback and a warning for responses taking at least 4500 ms.
+
+let awaitingNext = null; // 'training' | 'exp' | null
+
+window.addEventListener('keydown', function(e) {
+
+    // -----------------------------------
+    // 1. Handle "press SPACE for next trial"
+    // -----------------------------------
+    if (awaitingNext !== null && (e.code === 'Space' || e.key === ' ')) {
+        e.preventDefault(); // prevent page scrolling etc.
+
+        if (awaitingNext === 'training') {
+            showTrials_training();   // go to next training trial
+        } else if (awaitingNext === 'exp') {
+            showTrials_exp();        // go to next experimental trial
+        }
+
+        awaitingNext = null; // space no longer active until next response
+        return;
+    }
+
+    // -----------------------------------
+    // 2. Handle responses (0/1) *within* a trial
+    // -----------------------------------
+    if (!responseAcceptable) return;           // only accept responses at the right time
+    if (e.key !== '0' && e.key !== '1') return; // ignore other keys
+
+    // Prevent double responses on same trial
+    responseAcceptable = false;
+
+    endTrialTime = new Date();
+    window.cancelAnimationFrame(myReq);
+    clearTimeout(myTimeout);
+
+    // Reset animation / occluder state for the *current* trial end
+    refresh_stimuliOnset_test = 0;
+    occluder_velX = 0;
+    occluder_velY = 40;
+    occluder_posX = 0;
+    occluder_posY = 0;
+
+    // Hide canvas, show generic feedback prompt
+    $('#canvas_L').hide();
+    $('#Instruction4').show();
+
+    console.log('curTrial', curTrial);
+    console.log('trialsInfo.length', trialsInfo.length);
+
+    // Figure out whether we're in TRAINING or EXP
+    const inTraining = (trainingTrial < trialsInfo_training.length);
+    const row = inTraining ? trialsInfo_training[trainingTrial]
+                        : trialsInfo[curTrial];
+
+    //-----------------------------------
+// 2a. Store RT and response
+//-----------------------------------
+
+row.endTime = endTrialTime;
+
+// TRUE reaction time from reveal moment
+let rt_tmp = revealTime ? (endTrialTime - revealTime) : null;
+row.reactTime = rt_tmp;
+
+// subject response
+row.responseC = (e.key === '1') ? 1 : 0;
+
+//-----------------------------------
+// 2b. Accuracy feedback
+//-----------------------------------
+if (e.key === '1') {
+    if (row.matchType === 'new') {
+        $('#Instruction6').show();
+    }
+} else { // 0 key
+    if (row.matchType === 'same' || row.matchType === 'same_swap') {
+        $('#Instruction6').show();
+    }
+}
+
+//-----------------------------------
+// 2c. Slow response feedback  (≥ 4500 ms from reveal)
+//-----------------------------------
+if (rt_tmp !== null && rt_tmp >= 4500) {
+    $('#Instruction7').show();
+}
+
+    // -----------------------------------
+    // 3. Arm SPACE as the "next trial" key
+    // -----------------------------------
+    if (inTraining) {
+        awaitingNext = 'training';  // space will call showTrials_training()
+    } else {
+        awaitingNext = 'exp';       // space will call showTrials_exp()
+    }
+
+    // (No nextTrainingTrialButton / nextTrialButton needed now)
+
+}, false);
+
+// save json file to local device
+
+// ---------------------------------------
+// Save Data to Local Device
+// ---------------------------------------
+// Converts the trial data to JSON format and downloads it locally.
+
+function doneExperiment() {
+    const JSONObj = JSON.stringify(window.frame);
+    download(JSONObj, "test_data.json", "json"); 
+};
+
+/* wait for clicks */
+// These connect the HTML interface buttons to the corresponding functions.
+$('#continueInstructionButton1').click(continueInstruction1);
+$('#startTrainingButton').click(showTrials_training_0);
+$('#startExpButton').click(showTrials_exp_0);
+
+// this script is written by Qihan Wu on 10/11/2022 for experiments investigating what dominates object correspondece
+</script>
+
